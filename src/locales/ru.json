@@ -9,6 +9,8 @@
   "window.premium_interactions": "премиум",
   "window.chat": "чат",
   "window.completions": "inline",
+  "window.pro": "Pro",
+  "window.flash": "Flash",
   "error.loading": "загрузка…",
   "error.not_logged_in": "нет входа",
   "error.login_expired": "вход истёк",

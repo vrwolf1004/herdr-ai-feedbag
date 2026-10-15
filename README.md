@@ -2,7 +2,7 @@
 
 [**English**](README.md) | [한국어](README.ko.md)
 
-One feedbag for your herd: Claude Code and GitHub Copilot plan usage, shown **once** at the bottom of the herdr Agents sidebar instead of on every agent row.
+One feedbag for your herd: Claude Code, GitHub Copilot, OpenAI Codex, and Gemini CLI plan usage, shown **once** at the bottom of the herdr Agents sidebar instead of on every agent row.
 
 - Windows, Linux, and macOS
 - Python 3.8+; standard library only

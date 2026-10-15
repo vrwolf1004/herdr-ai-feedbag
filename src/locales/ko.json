@@ -9,6 +9,8 @@
   "window.premium_interactions": "프리미엄",
   "window.chat": "채팅",
   "window.completions": "자동완성",
+  "window.pro": "Pro",
+  "window.flash": "Flash",
   "error.loading": "불러오는 중…",
   "error.not_logged_in": "로그인 필요",
   "error.login_expired": "로그인 만료",

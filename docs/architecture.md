@@ -6,7 +6,7 @@
 
 1. 공용 `herdr-dock` workspace에 pane을 하나 두고 가짜 agent(`feedbag`)로 등록합니다 (`pane.report_agent`). dock이 없으면 만들고, 다른 플러그인이 이미 만들었으면 pane을 나눠(split) 들어갑니다.
 2. agents 패널은 기본적으로 spaces 순서로 정렬되므로, 이 workspace를 항상 맨 뒤로 옮기면 블록이 맨 아래에 옵니다 (`workspace.move`).
-3. 사용량은 이 pane에만 `$fb_claude`, `$fb_copilot` 토큰으로 붙입니다 (`pane.report_metadata`). 값을 보고하지 않은 토큰과 그 줄은 herdr가 그리지 않으므로 다른 agent 행에는 나오지 않습니다.
+3. 사용량은 이 pane에만 `$fb_claude`, `$fb_copilot`, `$fb_codex`, `$fb_gemini` 토큰으로 붙입니다 (`pane.report_metadata`). 값을 보고하지 않은 토큰과 그 줄은 herdr가 그리지 않으므로 다른 agent 행에는 나오지 않습니다.
 
 `rows_by_agent`는 공식 agent id에만 적용되고 직접 등록한 agent는 기본 `rows`를 쓰기 때문에, 기본 `rows`에 줄을 추가하는 방식을 씁니다.
 
@@ -19,7 +19,7 @@ start / refresh / stop action ───────────────┤
                           herdr-dock workspace 의 feedbag pane
                           └─ host 루프 (1초마다)
                                ├─ heartbeat 기록
-                               ├─ 주기가 된 서비스 조회 (Claude 5분, Copilot 10분)
+                               ├─ 주기가 된 서비스 조회 (Claude·Codex 5분, Copilot·Gemini 10분)
                                ├─ 사이드바 토큰 갱신 (socket, ttl 15초)
                                ├─ 상세 화면 다시 그리기
                                ├─ 5초마다: agent 재등록, 맨 아래 위치 확인
@@ -48,6 +48,22 @@ start / refresh / stop action ───────────────┤
 
 0.1.0이 쓰던 `feedbag` workspace가 남아 있으면 이름을 `herdr-dock`으로 바꿔 이어 씁니다.
 
+## 새 서비스 추가
+
+서비스 하나는 `fb_<이름>` 토큰 한 줄입니다. 예를 들어 `foo`를 추가하려면:
+
+1. `src/providers.py`
+   - `fetch_foo()`: 로그인 정보를 **읽기만** 해서 사용량을 조회하고 `Usage("foo", windows)`를 돌려줍니다. 실패하면 예외 대신 `Usage("foo", error=...)`를 돌려줍니다(오류 코드는 `Usage` 주석 참고, HTTP 오류는 `_http_error`).
+   - `parse_foo(data)`: 응답 → `Window(key, label, used_pct, resets_at)` 목록. 첫 창이 사이드바 막대, 두 번째 창이 막대 뒤 숫자가 됩니다. `used_pct`는 **사용한** 비율(0~100)입니다.
+   - `ALL_PROVIDERS`, `fetch()`에 이름을 넣습니다. 기본으로 켤지(`enabled_providers`)도 정합니다.
+2. `src/feedbag.py`: `FETCH_SECONDS`에 조회 주기.
+3. `src/render.py`: `SHORT_NAMES`(사이드바용 세 글자), `TITLES`(상세 화면 제목).
+4. `src/locales/*.json` 7개: 새 창 key가 있으면 `window.<key>`.
+5. `tests/test_providers.py`: `parse_foo` 테스트.
+6. 문서: `docs/usage*.md`의 사이드바 줄 예시, 표시 내용, 로그인 정보 표.
+
+사용자는 config `config.toml`에 `$fb_foo` 줄을 넣고 `config.json`의 `providers`로 켜고 끕니다.
+
 ## 상태 파일
 
 `HERDR_PLUGIN_STATE_DIR` 아래에 둡니다.
@@ -65,5 +81,5 @@ start / refresh / stop action ───────────────┤
 | --- | --- |
 | `src/feedbag.py` | 명령(ensure, host, refresh, stop)과 host 루프 |
 | `src/herdr_api.py` | herdr CLI, socket(Unix socket / named pipe) |
-| `src/providers.py` | Claude, Copilot 사용량 조회와 로그인 정보 읽기 |
+| `src/providers.py` | Claude, Copilot, Codex, Gemini 사용량 조회, 로그인 정보 읽기, 켤 서비스 목록 |
 | `src/render.py` | 사이드바 토큰, 애니메이션 막대, 상세 화면 (herdr 호출 없는 순수 함수) |

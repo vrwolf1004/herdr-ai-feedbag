@@ -34,10 +34,13 @@ rows = [
   ["agent"],
   [{ token = "$fb_claude", fg = "#d97757", rules = [{ starts_with = "!", fg = "#ff5f5f", bold = true }] }],
   [{ token = "$fb_copilot", fg = "#a371f7", rules = [{ starts_with = "!", fg = "#ff5f5f", bold = true }] }],
+  [{ token = "$fb_codex", fg = "#10a37f", rules = [{ starts_with = "!", fg = "#ff5f5f", bold = true }] }],
+  [{ token = "$fb_gemini", fg = "#4285f4", rules = [{ starts_with = "!", fg = "#ff5f5f", bold = true }] }],
 ]
 ```
 
-- `$fb_claude` / `$fb_copilot` are reported only on the feedbag block, so these rows disappear on every other agent.
+- Keep only the rows for the services you use (see [section 5](#5-choosing-services)). A row whose service is off simply stays empty.
+- `$fb_*` tokens are reported only on the feedbag block, so these rows disappear on every other agent.
 - The `workspace` rule hides the dock workspace name (`herdr-dock`) on the block's first row.
 - The `!` rule turns a line red while it is over the warning threshold. Change the colors as you like.
 - Keep `ui.agent_panel_sort` at `"spaces"` (the default). With `"priority"` the block is not pinned to the bottom.
@@ -77,15 +80,27 @@ description = "refresh AI usage"
 | --- | --- | --- |
 | `cld` | Claude 5-hour session window | `wk` = 7-day window |
 | `cop` | Copilot monthly premium requests | `rst` = reset date |
+| `cdx` | Codex 5-hour window (ChatGPT login) | `wk` = weekly window |
+| `gem` | Gemini CLI daily Pro model quota | `fl` = Flash models |
 
 - The bar is the **used** share. A shine runs through the filled part, one cell every 2 seconds.
 - At 80% or more in any window, the leading `●` becomes a blinking `!`. The mark is always one cell wide, so the line never shifts.
 - Only classic box-drawing characters (`█▓▒░►`) are used, no emoji.
 - The `feedbag` pane shows every window with its reset time, including Copilot chat and inline completions.
 
-Refresh intervals: Claude every 5 minutes, Copilot every 10 minutes. When there are no numbers yet, a failed fetch is retried after 30 seconds. Rate limits back off to 3× the interval.
+Refresh intervals: Claude and Codex every 5 minutes, Copilot and Gemini every 10 minutes. When there are no numbers yet, a failed fetch is retried after 30 seconds. Rate limits back off to 3× the interval.
 
-## 5. Credentials
+## 5. Choosing services
+
+By default feedbag shows Claude and Copilot always, plus Codex and Gemini when their login file exists (`~/.codex/auth.json`, `~/.gemini/oauth_creds.json`). To pick services and their order yourself, put `providers` in `config.json` in the plugin config dir:
+
+```json
+{ "providers": ["claude", "codex", "gemini"] }
+```
+
+Valid names: `claude`, `copilot`, `codex`, `gemini`. Unknown names are ignored. Run the `start` action again (or stop and start) after changing it — the list is read when the host starts. Also add the matching `$fb_<name>` row from [section 2](#2-sidebar-rows).
+
+## 6. Credentials
 
 Read-only. Tokens are never refreshed or rewritten — they belong to your agent sessions. If a login expires, use that CLI once; the next refresh picks up the new token.
 
@@ -93,10 +108,14 @@ Read-only. Tokens are never refreshed or rewritten — they belong to your agent
 | --- | --- |
 | Claude Code | `~/.claude/.credentials.json` (`CLAUDE_CONFIG_DIR` respected) |
 | GitHub Copilot | `FEEDBAG_COPILOT_TOKEN`, `GH_TOKEN`, `GITHUB_TOKEN` → `copilot-token` file in the plugin config dir → Copilot CLI login (Windows Credential Manager, macOS Keychain, Linux `secret-tool`) |
+| OpenAI Codex | `$CODEX_HOME/auth.json` or `~/.codex/auth.json` — ChatGPT login only; API-key logins have no plan limits |
+| Gemini CLI | `~/.gemini/oauth_creds.json` (Google login). This token lasts about an hour; feedbag does not refresh it, so after it expires the line shows `login expired` until you run `gemini` again |
+
+Codex and Gemini numbers come from undocumented endpoints (`chatgpt.com/backend-api/wham/usage`, `cloudcode-pa.googleapis.com/v1internal:retrieveUserQuota`) and may break if the vendors change them.
 
 The plugin config dir is printed by `herdr plugin config-dir herdr-ai-feedbag`.
 
-## 6. Display language
+## 7. Display language
 
 The dashboard and error messages support `en`, `ko`, `ru`, `fr`, `es`, `de`, and `ja`. The language is selected in this order:
 
@@ -107,6 +126,6 @@ The dashboard and error messages support `en`, `ko`, `ru`, `fr`, `es`, `de`, and
 
 The short sidebar labels (`cld`, `cop`, `wk`, `rst`) stay the same in every language so the line width never changes. Missing translations fall back to English.
 
-## 7. Using it with herdr-sidebar
+## 8. Using it with herdr-sidebar
 
 [herdr-sidebar](https://github.com/alexarthurs/herdr-sidebar) docks its explorer into every focused tab, including the `herdr-dock` workspace. feedbag notices it and sends the sidebar's own hide key (`b`) after one second. herdr-sidebar then remembers that tab and stops reopening it.

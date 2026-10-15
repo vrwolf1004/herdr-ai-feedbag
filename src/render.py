@@ -25,7 +25,7 @@ WARN_MARK = "!"
 # 깜빡임 꺼진 frame 의 한 칸. herdr 가 토큰 앞뒤 공백을 잘라 내므로 공백이 아닌 빈 글자(점자 빈칸)를 쓴다.
 BLINK_OFF = "⠀"
 
-SHORT_NAMES = {"claude": "cld", "copilot": "cop"}
+SHORT_NAMES = {"claude": "cld", "copilot": "cop", "codex": "cdx", "gemini": "gem"}
 
 
 def track(used_pct, frame):
@@ -103,7 +103,7 @@ ANSI_BOLD = "\033[1m"
 ANSI_RED = "\033[31m"
 ANSI_YELLOW = "\033[33m"
 ANSI_GREEN = "\033[32m"
-TITLES = {"claude": "Claude Code", "copilot": "GitHub Copilot"}
+TITLES = {"claude": "Claude Code", "copilot": "GitHub Copilot", "codex": "OpenAI Codex", "gemini": "Gemini CLI"}
 
 
 def color_for(used_pct):

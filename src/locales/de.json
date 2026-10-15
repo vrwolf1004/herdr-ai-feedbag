@@ -9,6 +9,8 @@
   "window.premium_interactions": "Premium",
   "window.chat": "Chat",
   "window.completions": "Inline",
+  "window.pro": "Pro",
+  "window.flash": "Flash",
   "error.loading": "lädt…",
   "error.not_logged_in": "nicht angemeldet",
   "error.login_expired": "Anmeldung abgelaufen",

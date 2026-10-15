@@ -1,4 +1,4 @@
-"""사용량 조회. 각 서비스 CLI 가 이미 저장해 둔 로그인 정보를 읽기만 한다.
+"""사용량 조회 (Claude Code, GitHub Copilot, OpenAI Codex, Gemini CLI). 각 서비스 CLI 가 이미 저장해 둔 로그인 정보를 읽기만 한다.
 
 토큰을 갱신하거나 파일을 고쳐 쓰지 않는다. 그 토큰은 사용자의 에이전트 세션이 쓰는 것이라
 여기서 갱신하면 에이전트 쪽 로그인이 깨질 수 있다. 만료됐으면 해당 CLI 를 한 번 쓰면 갱신된다.
@@ -11,14 +11,18 @@ import json
 import os
 import subprocess
 import sys
+import time
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import List, Optional
 
 HTTP_TIMEOUT_SECONDS = 10
 CLAUDE_USAGE_URL = "https://api.anthropic.com/api/oauth/usage"
 COPILOT_USER_URL = "https://api.github.com/copilot_internal/user"
+CODEX_USAGE_URL = "https://chatgpt.com/backend-api/wham/usage"
+GEMINI_API_URL = "https://cloudcode-pa.googleapis.com/v1internal"
 USER_AGENT = "herdr-ai-feedbag"
 
 
@@ -41,8 +45,11 @@ class Usage:
     rate_limited: bool = False
 
 
-def _get_json(url, headers):
-    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, **headers})
+def _get_json(url, headers, body=None):
+    data = None if body is None else json.dumps(body).encode("utf-8")
+    if data is not None:
+        headers = {"Content-Type": "application/json", **headers}
+    request = urllib.request.Request(url, data=data, headers={"User-Agent": USER_AGENT, **headers})
     with urllib.request.urlopen(request, timeout=HTTP_TIMEOUT_SECONDS) as response:
         return json.load(response)
 
@@ -216,3 +223,148 @@ def fetch_copilot(config_dir=None):
             return Usage("copilot", error="network", detail=str(error))
         return parse_copilot(data)
     return failure
+
+
+# ---------------------------------------------------------------- OpenAI Codex
+
+
+def _read_json(path):
+    try:
+        with open(path, encoding="utf-8") as file:
+            return json.load(file)
+    except (OSError, ValueError):
+        return None
+
+
+def codex_auth_path():
+    home = os.environ.get("CODEX_HOME") or os.path.join(os.path.expanduser("~"), ".codex")
+    return os.path.join(home, "auth.json")
+
+
+def _epoch_iso(seconds):
+    return datetime.fromtimestamp(float(seconds), timezone.utc).isoformat()
+
+
+def parse_codex(data, now=None):
+    limits = data.get("rate_limit") or {}
+    windows = []
+    for key, source, label in (("five_hour", "primary_window", "5h"), ("seven_day", "secondary_window", "wk")):
+        block = limits.get(source)
+        if not block:
+            continue
+        used = block.get("used_percent")
+        if block.get("reset_at") is not None:
+            resets = _epoch_iso(block["reset_at"])
+        elif block.get("reset_after_seconds") is not None:
+            resets = _epoch_iso((time.time() if now is None else now) +float(block["reset_after_seconds"]))
+        else:
+            resets = None
+        windows.append(Window(key, label, None if used is None else float(used), resets))
+    if not windows:
+        return Usage("codex", error="no_quota_data")
+    return Usage("codex", windows)
+
+
+def fetch_codex():
+    """ChatGPT 로그인(Codex CLI)의 5시간/주간 한도. API 키로 로그인했으면 한도 정보가 없다."""
+    tokens = (_read_json(codex_auth_path()) or {}).get("tokens") or {}
+    token = tokens.get("access_token")
+    if not token:
+        return Usage("codex", error="not_logged_in")
+    headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
+    if tokens.get("account_id"):
+        headers["ChatGPT-Account-Id"] = tokens["account_id"]
+    try:
+        data = _get_json(CODEX_USAGE_URL, headers)
+    except urllib.error.HTTPError as error:
+        return _http_error("codex", error)
+    except (OSError, ValueError) as error:
+        return Usage("codex", error="network", detail=str(error))
+    return parse_codex(data)
+
+
+# ---------------------------------------------------------------- Google Gemini CLI
+
+
+def gemini_creds_path():
+    return os.path.join(os.path.expanduser("~"), ".gemini", "oauth_creds.json")
+
+
+def parse_gemini(data):
+    """모델별 bucket 중 Pro, Flash 계열에서 가장 많이 쓴(남은 비율이 가장 낮은) 것을 고른다."""
+    lowest = {}
+    for bucket in data.get("buckets") or []:
+        model = str(bucket.get("modelId", "")).lower()
+        family = "pro" if "pro" in model else "flash" if "flash" in model else None
+        remaining = bucket.get("remainingFraction")
+        if family is None or remaining is None:
+            continue
+        if family not in lowest or float(remaining) < lowest[family][0]:
+            lowest[family] = (float(remaining), bucket.get("resetTime"))
+    windows = [
+        Window(family, label, max(0.0, 100.0 - lowest[family][0] * 100), lowest[family][1])
+        for family, label in (("pro", "pro"), ("flash", "fl"))
+        if family in lowest
+    ]
+    if not windows:
+        return Usage("gemini", error="no_quota_data")
+    return Usage("gemini", windows)
+
+
+def fetch_gemini():
+    """Gemini CLI 의 Google 로그인으로 일일 모델 한도를 본다. 토큰이 1시간짜리라 만료되면 gemini 를 한 번 실행해야 한다."""
+    creds = _read_json(gemini_creds_path()) or {}
+    token = creds.get("access_token")
+    if not token:
+        return Usage("gemini", error="not_logged_in")
+    expiry_ms = creds.get("expiry_date")
+    if expiry_ms and float(expiry_ms) / 1000 < time.time():
+        return Usage("gemini", error="login_expired")
+    headers = {"Authorization": f"Bearer {token}"}
+    try:
+        loaded = _get_json(f"{GEMINI_API_URL}:loadCodeAssist", headers,
+                           {"metadata": {"ideType": "IDE_UNSPECIFIED", "pluginType": "GEMINI"}})
+        project = loaded.get("cloudaicompanionProject")
+        if isinstance(project, dict):
+            project = project.get("id")
+        data = _get_json(f"{GEMINI_API_URL}:retrieveUserQuota", headers, {"project": project} if project else {})
+    except urllib.error.HTTPError as error:
+        return _http_error("gemini", error)
+    except (OSError, ValueError) as error:
+        return Usage("gemini", error="network", detail=str(error))
+    return parse_gemini(data)
+
+
+# ---------------------------------------------------------------- 서비스 목록
+
+
+ALL_PROVIDERS = ("claude", "copilot", "codex", "gemini")
+
+
+def fetch(name, config_dir=None):
+    if name == "claude":
+        return fetch_claude()
+    if name == "copilot":
+        return fetch_copilot(config_dir)
+    if name == "codex":
+        return fetch_codex()
+    if name == "gemini":
+        return fetch_gemini()
+    raise ValueError(f"unknown provider: {name}")
+
+
+def enabled_providers(config_dir=None):
+    """보여 줄 서비스. config.json 의 "providers" 가 있으면 그 순서대로 쓰고,
+    없으면 Claude, Copilot 은 항상, Codex, Gemini 는 로그인 파일이 있을 때만 보여 준다."""
+    config = _read_json(os.path.join(config_dir, "config.json")) if config_dir else None
+    chosen = (config or {}).get("providers")
+    if isinstance(chosen, list):
+        names = [name for name in chosen if name in ALL_PROVIDERS]
+        if names:
+            return list(dict.fromkeys(names))
+    names = ["claude", "copilot"]
+    if os.path.isfile(codex_auth_path()):
+        names.append("codex")
+    if os.path.isfile(gemini_creds_path()):
+        names.append("gemini")
+    return names

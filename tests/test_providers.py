@@ -49,6 +49,38 @@ class CopilotTokensTest(unittest.TestCase):
                 file.write("from-file\n")
             self.assertEqual(providers.copilot_tokens(folder), ["from-file"])
 
+    def test_codex_windows(self):
+        usage = providers.parse_codex({"rate_limit": {
+            "primary_window": {"used_percent": 42, "reset_at": 0},
+            "secondary_window": {"used_percent": 7, "reset_after_seconds": 60},
+        }}, now=0)
+        self.assertEqual([(w.label, w.used_pct) for w in usage.windows], [("5h", 42.0), ("wk", 7.0)])
+        self.assertTrue(usage.windows[1].resets_at.startswith("1970-01-01T00:01"))
+
+    def test_codex_no_limits(self):
+        self.assertEqual(providers.parse_codex({}).error, "no_quota_data")
+
+    def test_gemini_lowest_per_family(self):
+        usage = providers.parse_gemini({"buckets": [
+            {"modelId": "gemini-2.5-pro", "remainingFraction": 0.9},
+            {"modelId": "gemini-2.5-pro", "tokenType": "REQUESTS", "remainingFraction": 0.25},
+            {"modelId": "gemini-2.5-flash", "remainingFraction": 1.0},
+            {"modelId": "other", "remainingFraction": 0.0},
+        ]})
+        self.assertEqual([(w.key, w.used_pct) for w in usage.windows], [("pro", 75.0), ("flash", 0.0)])
+
+    def test_enabled_from_config(self):
+        with tempfile.TemporaryDirectory() as folder:
+            with open(os.path.join(folder, "config.json"), "w", encoding="utf-8") as file:
+                file.write('{"providers": ["gemini", "nope", "claude", "gemini"]}')
+            self.assertEqual(providers.enabled_providers(folder), ["gemini", "claude"])
+
+    def test_enabled_default_detects_login_files(self):
+        with tempfile.TemporaryDirectory() as folder, \
+                mock.patch.object(providers, "codex_auth_path", return_value=os.path.join(folder, "x")), \
+                mock.patch.object(providers, "gemini_creds_path", return_value=folder):
+            self.assertEqual(providers.enabled_providers(None), ["claude", "copilot"])
+
     def test_decode_secret(self):
         self.assertEqual(providers._decode_secret("gho_x".encode("utf-16-le")), "gho_x")
         self.assertEqual(providers._decode_secret(b"gho_x"), "gho_x")

@@ -5,7 +5,7 @@
     이미 있으면(다른 플러그인이 만든 경우) pane 을 나눠 들어간다.
     agents 패널은 spaces 순서로 정렬되므로 dock 을 항상 맨 뒤로 옮기면 블록이 맨 아래에 온다.
   - 그 pane 에서 host 루프가 돈다. 별도 백그라운드 프로세스를 두지 않으므로 pane 을 닫으면 같이 끝난다.
-  - 사용량 숫자는 $fb_claude / $fb_copilot 토큰으로 이 pane 에만 붙는다. 다른 agent 행에는 나오지 않는다.
+  - 사용량 숫자는 $fb_<서비스>(claude, copilot, codex, gemini) 토큰으로 이 pane 에만 붙는다. 다른 agent 행에는 나오지 않는다.
 
 명령
   ensure  workspace 와 host 를 확인하고 없으면 띄운다 (startup / event hook)
@@ -40,7 +40,7 @@ FRAME_TICKS = 2               # 이 바퀴 수마다 애니메이션이 한 칸 
 HEARTBEAT_STALE_SECONDS = 10  # 이보다 오래 heartbeat 가 없으면 host 가 죽은 것으로 본다
 TOKEN_TTL_MS = 15_000         # host 가 죽으면 토큰이 이 시간 뒤 사라진다
 LAYOUT_EVERY_TICKS = 5        # 맨 아래 위치 확인, agent 재등록 주기
-FETCH_SECONDS = {"claude": 300, "copilot": 600}
+FETCH_SECONDS = {"claude": 300, "copilot": 600, "codex": 300, "gemini": 600}
 RATE_LIMIT_BACKOFF = 3
 RETRY_SECONDS = 30
 # herdr-sidebar 는 포커스된 탭마다 사이드바를 자동으로 띄운다. feedbag 탭에 뜨면 잠시 뒤 그 사이드바의
@@ -242,10 +242,8 @@ class Host:
         self.config_dir = args.config
         self.pane_id = args.pane
         self.workspace_id = self.state.read("workspace.id")
-        self.usages = {
-            "claude": providers.Usage("claude", error="loading"),
-            "copilot": providers.Usage("copilot", error="loading"),
-        }
+        self.usages = {name: providers.Usage(name, error="loading")
+                       for name in providers.enabled_providers(self.config_dir)}
         self.next_fetch = {name: 0.0 for name in self.usages}
         self.updated_at = None
         self.socket_failures = 0
@@ -259,7 +257,7 @@ class Host:
         for name in self.usages:
             if not forced and now < self.next_fetch[name]:
                 continue
-            fetched = providers.fetch_claude() if name == "claude" else providers.fetch_copilot(self.config_dir)
+            fetched = providers.fetch(name, self.config_dir)
             previous = self.usages[name]
             if fetched.error and previous.windows:
                 # 일시적인 실패면 마지막 숫자를 유지하고 실패 이유만 보여 준다.
@@ -275,10 +273,7 @@ class Host:
             self.updated_at = datetime.now()
 
     def report(self, frame):
-        tokens = {
-            "fb_claude": render.sidebar_token(self.usages["claude"], frame),
-            "fb_copilot": render.sidebar_token(self.usages["copilot"], frame),
-        }
+        tokens = {f"fb_{name}": render.sidebar_token(usage, frame) for name, usage in self.usages.items()}
         ok = herdr_api.try_request("pane.report_metadata", {
             "pane_id": self.pane_id,
             "source": SOURCE,

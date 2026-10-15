@@ -2,7 +2,7 @@
 
 [English](README.md) | **한국어**
 
-Claude Code와 GitHub Copilot 사용량을 herdr Agents 사이드바 맨 아래에 **한 번만** 보여 주는 플러그인입니다. agent 행마다 같은 숫자가 반복되지 않습니다.
+Claude Code, GitHub Copilot, OpenAI Codex, Gemini CLI 사용량을 herdr Agents 사이드바 맨 아래에 **한 번만** 보여 주는 플러그인입니다. agent 행마다 같은 숫자가 반복되지 않습니다.
 
 - Windows, Linux, macOS 지원
 - Python 3.8 이상, 표준 라이브러리만 사용

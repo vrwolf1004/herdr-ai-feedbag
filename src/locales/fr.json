@@ -9,6 +9,8 @@
   "window.premium_interactions": "premium",
   "window.chat": "chat",
   "window.completions": "inline",
+  "window.pro": "Pro",
+  "window.flash": "Flash",
   "error.loading": "chargement…",
   "error.not_logged_in": "non connecté",
   "error.login_expired": "connexion expirée",

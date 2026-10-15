@@ -3,7 +3,7 @@ name = "herdr-ai-feedbag"
 version = "0.3.0"
 min_herdr_version = "0.9.0"
 platforms = ["windows", "linux", "macos"]
-description = "Claude Code and GitHub Copilot plan usage in one block at the bottom of the herdr sidebar — no per-agent duplicates"
+description = "Claude Code, GitHub Copilot, Codex and Gemini plan usage in one block at the bottom of the herdr sidebar — no per-agent duplicates"
 
 # Python 3.8+ 표준 라이브러리만 쓴다. 실행기 이름이 OS 마다 달라(Windows: python, Linux/macOS: python3)
 # 같은 동작을 OS 별로 선언한다. herdr 는 액션 id 중복을 허용하지 않으므로 Windows 쪽 id 에 -windows 를 붙인다.

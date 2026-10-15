@@ -31,7 +31,16 @@
 
 ## feedbag pane을 실수로 닫았다 / Ctrl+C로 멈췄다
 
-`start` 액션을 실행하거나, workspace를 하나 만들면 자동으로 다시 뜹니다. host가 멈추면 사이드바 숫자는 15초 뒤 사라집니다.
+herdr 명령 팔레트에서 "feedbag: show usage block"을 실행하거나, workspace를 하나 만들면 자동으로 다시 뜹니다. host가 멈추면 사이드바 숫자는 15초 뒤 사라집니다.
+
+터미널에서는 액션 id를 먼저 쓰고 플러그인을 `--plugin`으로 지정합니다.
+
+```sh
+herdr plugin action invoke start-windows --plugin herdr-ai-feedbag   # windows
+herdr plugin action invoke start --plugin herdr-ai-feedbag           # linux / macos
+```
+
+`herdr plugin action invoke herdr-ai-feedbag start-windows`처럼 플러그인 id를 앞에 쓰면 `unknown option` 오류가 납니다. 셸에 `start`만 치면 PowerShell의 `Start-Process`가 실행됩니다.
 
 ## Copilot 숫자가 이상하다
 

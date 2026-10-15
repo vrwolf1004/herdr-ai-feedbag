@@ -55,9 +55,11 @@ The block starts automatically when the herdr server starts and when a workspace
 On Windows the action ids end with `-windows`:
 
 ```sh
-herdr plugin action invoke herdr-ai-feedbag.start-windows   # windows
-herdr plugin action invoke herdr-ai-feedbag.start           # linux / macos
+herdr plugin action invoke start-windows --plugin herdr-ai-feedbag   # windows
+herdr plugin action invoke start --plugin herdr-ai-feedbag           # linux / macos
 ```
+
+If you closed the feedbag pane with Ctrl+C, run "feedbag: show usage block" from the herdr command palette, run the command above, or create any workspace to bring it back. Typing just `start` in a shell does not work (in PowerShell it is `Start-Process`).
 
 Bind one to a key if you use it often:
 

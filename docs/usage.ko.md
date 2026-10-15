@@ -55,9 +55,11 @@ herdr 서버가 시작될 때와 workspace가 만들어질 때 자동으로 시�
 Windows에서는 액션 id 뒤에 `-windows`가 붙습니다.
 
 ```sh
-herdr plugin action invoke herdr-ai-feedbag.start-windows   # windows
-herdr plugin action invoke herdr-ai-feedbag.start           # linux / macos
+herdr plugin action invoke start-windows --plugin herdr-ai-feedbag   # windows
+herdr plugin action invoke start --plugin herdr-ai-feedbag           # linux / macos
 ```
+
+feedbag pane을 Ctrl+C로 닫았으면 herdr 명령 팔레트에서 "feedbag: show usage block"을 실행하거나, 위 명령을 실행하거나, workspace를 하나 만들면 다시 뜹니다. 셸에 `start`만 치면 PowerShell의 `Start-Process`가 실행되니 주의하세요.
 
 ## 4. 표시 내용
 

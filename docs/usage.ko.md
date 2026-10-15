@@ -39,7 +39,7 @@ rows = [
 ]
 ```
 
-- 쓰는 서비스의 줄만 남기면 됩니다([5장](#5-서비스-선택)). 꺼진 서비스의 줄은 비어 있어 보이지 않습니다.
+- 쓰는 서비스의 줄만 남겨도 되고 네 줄을 모두 넣어도 됩니다. 꺼진 서비스의 줄은 비어 있어 보이지 않습니다([5장](#5-서비스-선택)). 빠진 줄은 `rows` 액션으로 확인할 수 있습니다.
 - `$fb_*` 토큰은 feedbag 블록에만 보고되므로 다른 agent에서는 이 줄이 사라집니다.
 - `workspace` rule은 블록 첫 줄에 dock workspace 이름(`herdr-dock`)이 나오지 않게 숨깁니다.
 - `!` rule은 경고 기준을 넘은 줄을 빨간색으로 바꿉니다. 색은 원하는 대로 바꿔도 됩니다.
@@ -54,6 +54,8 @@ herdr 서버가 시작될 때와 workspace가 만들어질 때 자동으로 시�
 | `start` | 블록이 없으면 만들고 host를 시작 |
 | `refresh` | 지금 바로 다시 조회 |
 | `stop` | host를 멈추고 feedbag pane을 닫음 (dock에 다른 블록이 없으면 workspace도 닫음) |
+| `services` | 서비스 선택 화면 열기 ([5장](#5-서비스-선택)) |
+| `rows` | herdr `config.toml`에 빠진 `$fb_*` 사이드바 줄을 출력 (`herdr plugin log list --plugin herdr-ai-feedbag`로 확인). 파일은 고치지 않음 |
 
 Windows에서는 액션 id 뒤에 `-windows`가 붙습니다.
 
@@ -82,24 +84,47 @@ feedbag pane을 Ctrl+C로 닫았으면 herdr 명령 팔레트에서 "feedbag: sh
 
 ## 5. 서비스 선택
 
-기본으로 Claude, Copilot은 항상 보이고, Codex와 Gemini는 로그인 파일(`~/.codex/auth.json`, `~/.gemini/oauth_creds.json`)이 있을 때만 보입니다. 보일 서비스와 순서를 직접 정하려면 플러그인 config 폴더의 `config.json`에 `providers`를 넣습니다.
+기본으로 Claude, Copilot은 항상 보이고, Codex와 Gemini는 로그인 파일(`~/.codex/auth.json`, `~/.gemini/oauth_creds.json`)이 있을 때만 보입니다.
 
-```json
-{ "providers": ["claude", "codex", "gemini"] }
+### 선택 화면
+
+herdr 명령 팔레트에서 **feedbag: choose services**를 실행합니다(또는 `herdr plugin action invoke services-windows --plugin herdr-ai-feedbag`, Linux/macOS는 `services`). overlay 화면이 뜹니다.
+
+```text
+ feedbag  서비스 선택
+
+ [x] Claude Code      로그인됨
+ [x] GitHub Copilot   로그인됨
+ [ ] OpenAI Codex     로그인 필요
+ [ ] Gemini CLI       로그인 필요
+
+ ↑↓ 이동 · Space 켜기/끄기 · Enter 저장 · q 취소
 ```
 
-쓸 수 있는 이름은 `claude`, `copilot`, `codex`, `gemini`이고, 모르는 이름은 무시합니다. 목록은 host가 시작될 때 읽으므로 바꾼 뒤에는 `stop` 후 `start`를 실행하세요. [2장](#2-사이드바-줄-추가)의 `$fb_<이름>` 줄도 함께 넣어야 합니다.
+- Enter를 누르면 `config.json`에 저장되고 1초 안에 블록에 반영됩니다. 다시 시작할 필요가 없습니다. 서비스는 하나 이상 켜 두어야 합니다.
+- 고른 서비스의 `$fb_<이름>` 줄이 herdr `config.toml`에 없으면 넣을 줄을 보여 줍니다. `config.toml`은 다른 설정이 섞인 파일이라 직접 고치지 않습니다. [2장](#2-사이드바-줄-추가)의 네 줄을 한 번 모두 넣어 두면 꺼진 서비스 줄은 비어서 보이지 않으니 편합니다.
+
+### 직접 설정
+
+선택 화면은 플러그인 config 폴더의 `config.json`에 `providers`를 씁니다. 다른 값은 그대로 둡니다.
+
+```json
+{ "providers": ["claude", "codex", "gemini"], "copilot_account": "octocat" }
+```
+
+- `providers`: `claude`, `copilot`, `codex`, `gemini` 중에서 사이드바 순서대로 적습니다. 모르는 이름은 무시합니다. 바꾸면 1초 안에 반영됩니다.
+- `copilot_account`: Copilot CLI에 GitHub 계정이 여러 개 로그인돼 있을 때 이 계정만 씁니다(Windows, macOS. Linux는 지원이 확실하지 않음). 없으면 처음 응답한 계정을 씁니다.
 
 ## 6. 로그인 정보
 
-읽기만 하고 토큰을 갱신하거나 고쳐 쓰지 않습니다. 로그인이 만료됐으면 해당 CLI를 한 번 쓰면 다음 조회부터 새 토큰을 씁니다.
+읽기만 하고 로그인 파일을 고쳐 쓰지 않습니다. 로그인이 만료됐으면 해당 CLI를 한 번 쓰면 다음 조회부터 새 토큰을 씁니다.
 
 | 서비스 | 위치 (먼저 찾은 것 사용) |
 | --- | --- |
 | Claude Code | `~/.claude/.credentials.json` (`CLAUDE_CONFIG_DIR` 지원) |
 | GitHub Copilot | `FEEDBAG_COPILOT_TOKEN`, `GH_TOKEN`, `GITHUB_TOKEN` → 플러그인 config 폴더의 `copilot-token` 파일 → Copilot CLI 로그인 (Windows 자격 증명 관리자, macOS 키체인, Linux `secret-tool`) |
 | OpenAI Codex | `$CODEX_HOME/auth.json` 또는 `~/.codex/auth.json`. ChatGPT 로그인만 해당하고 API 키 로그인은 한도 정보가 없습니다 |
-| Gemini CLI | `~/.gemini/oauth_creds.json` (Google 로그인). 이 토큰은 1시간쯤 유효하고 feedbag은 갱신하지 않으므로, 만료되면 `gemini`를 다시 실행할 때까지 `로그인 만료`로 보입니다 |
+| Gemini CLI | `~/.gemini/oauth_creds.json` (Google 로그인). access token은 1시간쯤 유효합니다. 만료되면 refresh token으로 새 토큰을 받아 **메모리에만** 둡니다. 파일은 건드리지 않고 Google은 refresh token을 바꾸지 않으므로 Gemini CLI 로그인은 그대로입니다. 이때 Gemini CLI의 OAuth client가 필요해 설치된 `@google/gemini-cli` 패키지에서 읽습니다(또는 `FEEDBAG_GEMINI_CLIENT_ID` / `FEEDBAG_GEMINI_CLIENT_SECRET`). 찾지 못하면 `gemini`를 다시 실행할 때까지 `로그인 만료`로 보입니다 |
 
 Codex, Gemini 숫자는 공개 문서가 없는 내부 엔드포인트(`chatgpt.com/backend-api/wham/usage`, `cloudcode-pa.googleapis.com/v1internal:retrieveUserQuota`)에서 가져오므로 서비스 쪽이 바뀌면 깨질 수 있습니다.
 

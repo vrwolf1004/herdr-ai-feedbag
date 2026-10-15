@@ -39,7 +39,7 @@ rows = [
 ]
 ```
 
-- Keep only the rows for the services you use (see [section 5](#5-choosing-services)). A row whose service is off simply stays empty.
+- Keep only the rows for the services you use, or keep all four: a row whose service is off simply stays empty (see [section 5](#5-choosing-services)). The `rows` action prints any that are missing.
 - `$fb_*` tokens are reported only on the feedbag block, so these rows disappear on every other agent.
 - The `workspace` rule hides the dock workspace name (`herdr-dock`) on the block's first row.
 - The `!` rule turns a line red while it is over the warning threshold. Change the colors as you like.
@@ -54,6 +54,8 @@ The block starts automatically when the herdr server starts and when a workspace
 | `start` | Create the block if missing and start the host |
 | `refresh` | Fetch usage now |
 | `stop` | Stop the host and close the feedbag pane (and the dock workspace if nothing else is in it) |
+| `services` | Open the service picker ([section 5](#5-choosing-services)) |
+| `rows` | Print the `$fb_*` sidebar rows missing from herdr's `config.toml` (see `herdr plugin log list --plugin herdr-ai-feedbag`). The file is never edited |
 
 On Windows the action ids end with `-windows`:
 
@@ -92,24 +94,47 @@ Refresh intervals: Claude and Codex every 5 minutes, Copilot and Gemini every 10
 
 ## 5. Choosing services
 
-By default feedbag shows Claude and Copilot always, plus Codex and Gemini when their login file exists (`~/.codex/auth.json`, `~/.gemini/oauth_creds.json`). To pick services and their order yourself, put `providers` in `config.json` in the plugin config dir:
+By default feedbag shows Claude and Copilot always, plus Codex and Gemini when their login file exists (`~/.codex/auth.json`, `~/.gemini/oauth_creds.json`).
 
-```json
-{ "providers": ["claude", "codex", "gemini"] }
+### Service picker
+
+Run **feedbag: choose services** from the herdr command palette (or `herdr plugin action invoke services-windows --plugin herdr-ai-feedbag`; `services` on Linux/macOS). An overlay opens:
+
+```text
+ feedbag  choose services
+
+ [x] Claude Code      logged in
+ [x] GitHub Copilot   logged in
+ [ ] OpenAI Codex     not logged in
+ [ ] Gemini CLI       not logged in
+
+ ↑↓ move · Space on/off · Enter save · q cancel
 ```
 
-Valid names: `claude`, `copilot`, `codex`, `gemini`. Unknown names are ignored. Run the `start` action again (or stop and start) after changing it — the list is read when the host starts. Also add the matching `$fb_<name>` row from [section 2](#2-sidebar-rows).
+- Enter saves to `config.json` and the block updates within a second; no restart needed. At least one service must stay on.
+- If a chosen service has no `$fb_<name>` row in herdr's `config.toml`, the picker lists the rows to add. It does not edit `config.toml` (it holds your other settings). Tip: add all four rows from [section 2](#2-sidebar-rows) once; rows for services that are off stay empty and invisible.
+
+### By hand
+
+The picker writes `providers` in `config.json` in the plugin config dir. Other keys are kept.
+
+```json
+{ "providers": ["claude", "codex", "gemini"], "copilot_account": "octocat" }
+```
+
+- `providers`: valid names `claude`, `copilot`, `codex`, `gemini`, in sidebar order. Unknown names are ignored. Changes are picked up within a second.
+- `copilot_account`: when Copilot CLI is logged in to several GitHub accounts, use only this one (Windows, macOS; Linux best effort). Without it, the first account that answers is used.
 
 ## 6. Credentials
 
-Read-only. Tokens are never refreshed or rewritten — they belong to your agent sessions. If a login expires, use that CLI once; the next refresh picks up the new token.
+Read-only. Credential files are never rewritten — they belong to your agent sessions. If a login expires, use that CLI once; the next refresh picks up the new token.
 
 | Provider | Source (first match wins) |
 | --- | --- |
 | Claude Code | `~/.claude/.credentials.json` (`CLAUDE_CONFIG_DIR` respected) |
 | GitHub Copilot | `FEEDBAG_COPILOT_TOKEN`, `GH_TOKEN`, `GITHUB_TOKEN` → `copilot-token` file in the plugin config dir → Copilot CLI login (Windows Credential Manager, macOS Keychain, Linux `secret-tool`) |
 | OpenAI Codex | `$CODEX_HOME/auth.json` or `~/.codex/auth.json` — ChatGPT login only; API-key logins have no plan limits |
-| Gemini CLI | `~/.gemini/oauth_creds.json` (Google login). This token lasts about an hour; feedbag does not refresh it, so after it expires the line shows `login expired` until you run `gemini` again |
+| Gemini CLI | `~/.gemini/oauth_creds.json` (Google login). The access token lasts about an hour. When it has expired, feedbag gets a fresh one with the refresh token and keeps it **in memory only** — the file is not touched and Google does not rotate the refresh token, so Gemini CLI stays logged in. This needs Gemini CLI's OAuth client, read from the installed `@google/gemini-cli` package (or `FEEDBAG_GEMINI_CLIENT_ID` / `FEEDBAG_GEMINI_CLIENT_SECRET`); if it cannot be found the line shows `login expired` until you run `gemini` again |
 
 Codex and Gemini numbers come from undocumented endpoints (`chatgpt.com/backend-api/wham/usage`, `cloudcode-pa.googleapis.com/v1internal:retrieveUserQuota`) and may break if the vendors change them.
 

@@ -7,7 +7,7 @@ description = "Claude Code, GitHub Copilot, Codex and Gemini plan usage in one b
 
 # Python 3.8+ 표준 라이브러리만 쓴다. 실행기 이름이 OS 마다 달라(Windows: python, Linux/macOS: python3)
 # 같은 동작을 OS 별로 선언한다. herdr 는 액션 id 중복을 허용하지 않으므로 Windows 쪽 id 에 -windows 를 붙인다.
-# host 루프는 "feedbag" workspace 의 pane 안에서 돌고, hook 은 그 pane 이 살아 있는지만 확인한다.
+# host 루프는 "herdr-dock" workspace 의 pane 안에서 돌고, hook 은 그 pane 이 살아 있는지만 확인한다.
 
 # ---------------------------------------------------------------- Linux / macOS
 
@@ -41,6 +41,27 @@ platforms = ["linux", "macos"]
 contexts = ["global"]
 command = ["python3", "-X", "utf8", "src/feedbag.py", "stop"]
 
+[[actions]]
+id = "services"
+title = "feedbag: choose services"
+platforms = ["linux", "macos"]
+contexts = ["global"]
+command = ["python3", "-X", "utf8", "src/feedbag.py", "services"]
+
+[[actions]]
+id = "rows"
+title = "feedbag: check sidebar rows"
+platforms = ["linux", "macos"]
+contexts = ["global"]
+command = ["python3", "-X", "utf8", "src/feedbag.py", "rows"]
+
+[[panes]]
+id = "services"
+title = "feedbag services"
+platforms = ["linux", "macos"]
+placement = "overlay"
+command = ["python3", "-X", "utf8", "src/feedbag.py", "services-ui"]
+
 # ---------------------------------------------------------------- Windows
 
 [[startup]]
@@ -72,3 +93,24 @@ title = "feedbag: hide usage block"
 platforms = ["windows"]
 contexts = ["global"]
 command = ["python", "-X", "utf8", "src/feedbag.py", "stop"]
+
+[[actions]]
+id = "services-windows"
+title = "feedbag: choose services"
+platforms = ["windows"]
+contexts = ["global"]
+command = ["python", "-X", "utf8", "src/feedbag.py", "services"]
+
+[[actions]]
+id = "rows-windows"
+title = "feedbag: check sidebar rows"
+platforms = ["windows"]
+contexts = ["global"]
+command = ["python", "-X", "utf8", "src/feedbag.py", "rows"]
+
+[[panes]]
+id = "services-windows"
+title = "feedbag services"
+platforms = ["windows"]
+placement = "overlay"
+command = ["python", "-X", "utf8", "src/feedbag.py", "services-ui"]

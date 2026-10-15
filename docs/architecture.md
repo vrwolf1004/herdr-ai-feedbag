@@ -73,13 +73,15 @@ start / refresh / stop action ───────────────┤
 | `workspace.id`, `pane.id` | herdr-dock workspace와 host pane |
 | `heartbeat` | host 생존 확인 시각 |
 | `starting` | ensure 중복 실행 방지 |
-| `refresh`, `stop` | 액션 → host 신호 |
+| `refresh`, `stop` | 액션 → host 신호. 서비스 선택 화면도 저장 후 `refresh`를 남겨 목록을 다시 읽게 함 |
 
 ## 파일
 
 | 파일 | 역할 |
 | --- | --- |
-| `src/feedbag.py` | 명령(ensure, host, refresh, stop)과 host 루프 |
+| `src/feedbag.py` | 명령(ensure, host, refresh, stop, services, rows)와 host 루프 |
 | `src/herdr_api.py` | herdr CLI, socket(Unix socket / named pipe) |
 | `src/providers.py` | Claude, Copilot, Codex, Gemini 사용량 조회, 로그인 정보 읽기, 켤 서비스 목록 |
 | `src/render.py` | 사이드바 토큰, 애니메이션 막대, 상세 화면 (herdr 호출 없는 순수 함수) |
+| `src/services.py` | 서비스 선택 화면 (overlay pane, `config.json`의 `providers` 저장) |
+| `src/rows.py` | herdr `config.toml`에 빠진 `$fb_*` 줄 검사 (읽기만 함) |

@@ -17,5 +17,12 @@
   "error.rate_limited": "лимит запросов",
   "error.network": "ошибка сети: {detail}",
   "error.http": "HTTP {detail}",
-  "error.no_quota_data": "нет данных о квоте"
+  "error.no_quota_data": "нет данных о квоте",
+  "services.title": "выбор сервисов",
+  "services.help": "↑↓ перемещение · Пробел вкл/выкл · Enter сохранить · q отмена",
+  "services.status_ok": "вход выполнен",
+  "services.status_missing": "нужен вход",
+  "services.status_expired": "вход истёк",
+  "services.need_one": "оставьте хотя бы один сервис",
+  "services.rows_missing": "Добавьте эти строки в [ui.sidebar.agents] rows в {path} и выполните herdr server reload-config:"
 }

@@ -17,5 +17,12 @@
   "error.rate_limited": "レート制限中",
   "error.network": "ネットワークエラー: {detail}",
   "error.http": "HTTP {detail}",
-  "error.no_quota_data": "使用量データなし"
+  "error.no_quota_data": "使用量データなし",
+  "services.title": "サービス選択",
+  "services.help": "↑↓ 移動 · Space オン/オフ · Enter 保存 · q キャンセル",
+  "services.status_ok": "ログイン済み",
+  "services.status_missing": "ログインが必要",
+  "services.status_expired": "ログイン期限切れ",
+  "services.need_one": "サービスを1つ以上オンにしてください",
+  "services.rows_missing": "{path} の [ui.sidebar.agents] rows に次の行を追加し、herdr server reload-config を実行してください:"
 }

@@ -20,7 +20,7 @@
 
 - Claude: Claude Code를 한 번 실행하면 토큰이 갱신됩니다. `~/.claude/.credentials.json`이 있는지 확인하세요.
 - Codex: `codex login`으로 ChatGPT 계정에 로그인합니다. API 키 로그인은 한도 정보가 없습니다.
-- Gemini: 토큰이 1시간이면 만료됩니다. `gemini`를 한 번 실행하면 다음 조회부터 보입니다.
+- Gemini: 토큰이 만료되면 refresh token으로 메모리에서 새로 받습니다. 그래도 `login expired`면 Gemini CLI 설치본에서 OAuth client를 찾지 못한 것이니 `gemini`를 한 번 실행하거나 `FEEDBAG_GEMINI_CLIENT_ID`, `FEEDBAG_GEMINI_CLIENT_SECRET`를 설정하세요.
 - Copilot: Copilot CLI에서 `/login` 하거나, `FEEDBAG_COPILOT_TOKEN` 환경 변수나 config 폴더의 `copilot-token` 파일에 토큰을 넣으세요.
 
 ## `network: ...` 오류

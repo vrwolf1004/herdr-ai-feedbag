@@ -12,6 +12,8 @@
   host    feedbag pane 안에서 도는 루프. 상세 화면 표시 + 사이드바 토큰 갱신
   refresh host 에게 즉시 다시 조회하라고 알린다
   stop    host 를 멈추고 workspace 를 닫는다
+  services    서비스 선택 화면(services-ui)을 overlay pane 으로 띄운다
+  rows    herdr config.toml 에 빠진 사이드바 줄을 출력한다
 """
 
 import argparse
@@ -242,18 +244,37 @@ class Host:
         self.config_dir = args.config
         self.pane_id = args.pane
         self.workspace_id = self.state.read("workspace.id")
-        self.usages = {name: providers.Usage(name, error="loading")
-                       for name in providers.enabled_providers(self.config_dir)}
-        self.next_fetch = {name: 0.0 for name in self.usages}
+        self.usages = {}
+        self.next_fetch = {}
+        self.config_mtime = None
+        self.sync_providers()
         self.updated_at = None
         self.socket_failures = 0
         self.sidebar_seen = {}  # 사이드바 pane id → 처음 본 시각
         self.sidebar_sent = {}  # 사이드바 pane id → 마지막으로 숨기기 키를 보낸 시각
 
+    def config_changed(self):
+        try:
+            mtime = os.path.getmtime(providers.config_path(self.config_dir) or "")
+        except OSError:
+            mtime = None
+        changed = mtime != self.config_mtime
+        self.config_mtime = mtime
+        return changed
+
+    def sync_providers(self):
+        """config.json 의 providers 를 다시 읽는다. 이미 있던 서비스는 숫자와 조회 일정을 그대로 둔다."""
+        self.config_changed()
+        names = providers.enabled_providers(self.config_dir)
+        self.usages = {name: self.usages.get(name) or providers.Usage(name, error="loading") for name in names}
+        self.next_fetch = {name: self.next_fetch.get(name, 0.0) for name in names}
+
     def fetch_due(self, now):
         forced = self.state.read("refresh") is not None
         if forced:
             self.state.remove("refresh")
+        if forced or self.config_changed():
+            self.sync_providers()
         for name in self.usages:
             if not forced and now < self.next_fetch[name]:
                 continue
@@ -351,6 +372,37 @@ class Host:
         return 0
 
 
+def cmd_services(args):
+    """서비스 선택 화면을 overlay pane 으로 띄운다. pane 안의 프로세스는 플러그인 환경을 못 받으므로 넘겨 준다."""
+    entrypoint = "services-windows" if herdr_api.IS_WINDOWS else "services"
+    command = ["plugin", "pane", "open", "--plugin", PLUGIN_ID, "--entrypoint", entrypoint,
+               "--placement", "overlay", "--focus",
+               "--env", f"HERDR_PLUGIN_STATE_DIR={args.state}"]
+    if args.config:
+        command += ["--env", f"HERDR_PLUGIN_CONFIG_DIR={args.config}"]
+    herdr_api.cli(*command)
+    return 0
+
+
+def cmd_services_ui(args):
+    import services
+    return services.run(args.config, args.state)
+
+
+def cmd_rows(args):
+    """켜진 서비스 중 herdr config.toml 에 사이드바 줄이 없는 것을 출력한다. 파일은 고치지 않는다."""
+    import rows
+    missing = rows.missing_rows(providers.enabled_providers(args.config))
+    if not missing:
+        print(f"feedbag: all sidebar rows are in {rows.herdr_config_path()}")
+        return 0
+    print(f"feedbag: add these rows to [ui.sidebar.agents] rows in {rows.herdr_config_path()}, "
+          "then run `herdr server reload-config`:")
+    for name in missing:
+        print(rows.row_line(name))
+    return 0
+
+
 def cmd_host(args):
     try:
         return Host(args).run()
@@ -363,7 +415,7 @@ def cmd_host(args):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(prog="feedbag")
-    parser.add_argument("command", choices=["ensure", "host", "refresh", "stop"])
+    parser.add_argument("command", choices=["ensure", "host", "refresh", "stop", "services", "services-ui", "rows"])
     parser.add_argument("--state", default=default_state_dir())
     parser.add_argument("--config", default=default_config_dir())
     parser.add_argument("--pane", default=os.environ.get("HERDR_PANE_ID"))
@@ -372,7 +424,10 @@ def main(argv=None):
         # host 는 pane 안에서 돌아 플러그인 환경을 받지 못한다. config.json 의 lang 을 읽도록 넘겨 준다.
         os.environ["HERDR_PLUGIN_CONFIG_DIR"] = args.config
         i18n.set_language(i18n.detect())
-    commands ={"ensure": cmd_ensure, "host": cmd_host, "refresh": cmd_refresh, "stop": cmd_stop}
+    commands = {
+        "ensure": cmd_ensure, "host": cmd_host, "refresh": cmd_refresh, "stop": cmd_stop,
+        "services": cmd_services, "services-ui": cmd_services_ui, "rows": cmd_rows,
+    }
     try:
         return commands[args.command](args)
     except herdr_api.HerdrError as error:

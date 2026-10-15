@@ -17,5 +17,12 @@
   "error.rate_limited": "Ratenlimit erreicht",
   "error.network": "Netzwerkfehler: {detail}",
   "error.http": "HTTP {detail}",
-  "error.no_quota_data": "keine Kontingentdaten"
+  "error.no_quota_data": "keine Kontingentdaten",
+  "services.title": "Dienste auswählen",
+  "services.help": "↑↓ bewegen · Leertaste an/aus · Enter speichern · q abbrechen",
+  "services.status_ok": "angemeldet",
+  "services.status_missing": "nicht angemeldet",
+  "services.status_expired": "Anmeldung abgelaufen",
+  "services.need_one": "Mindestens einen Dienst aktiviert lassen",
+  "services.rows_missing": "Diese Zeilen zu [ui.sidebar.agents] rows in {path} hinzufügen und herdr server reload-config ausführen:"
 }

@@ -17,5 +17,12 @@
   "error.rate_limited": "rate limited",
   "error.network": "network error: {detail}",
   "error.http": "HTTP {detail}",
-  "error.no_quota_data": "no quota data"
+  "error.no_quota_data": "no quota data",
+  "services.title": "choose services",
+  "services.help": "↑↓ move · Space on/off · Enter save · q cancel",
+  "services.status_ok": "logged in",
+  "services.status_missing": "not logged in",
+  "services.status_expired": "login expired",
+  "services.need_one": "keep at least one service",
+  "services.rows_missing": "Add these rows to [ui.sidebar.agents] rows in {path}, then run herdr server reload-config:"
 }

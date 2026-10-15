@@ -17,5 +17,12 @@
   "error.rate_limited": "요청 한도 초과",
   "error.network": "네트워크 오류: {detail}",
   "error.http": "HTTP {detail}",
-  "error.no_quota_data": "사용량 정보 없음"
+  "error.no_quota_data": "사용량 정보 없음",
+  "services.title": "서비스 선택",
+  "services.help": "↑↓ 이동 · Space 켜기/끄기 · Enter 저장 · q 취소",
+  "services.status_ok": "로그인됨",
+  "services.status_missing": "로그인 필요",
+  "services.status_expired": "로그인 만료",
+  "services.need_one": "서비스를 하나 이상 켜 두세요",
+  "services.rows_missing": "{path} 의 [ui.sidebar.agents] rows 에 아래 줄을 넣고 herdr server reload-config 를 실행하세요:"
 }

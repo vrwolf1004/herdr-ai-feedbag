@@ -17,5 +17,12 @@
   "error.rate_limited": "límite de solicitudes",
   "error.network": "error de red: {detail}",
   "error.http": "HTTP {detail}",
-  "error.no_quota_data": "sin datos de cuota"
+  "error.no_quota_data": "sin datos de cuota",
+  "services.title": "elegir servicios",
+  "services.help": "↑↓ mover · Espacio activar/desactivar · Enter guardar · q cancelar",
+  "services.status_ok": "sesión iniciada",
+  "services.status_missing": "sin sesión",
+  "services.status_expired": "sesión caducada",
+  "services.need_one": "deja al menos un servicio activo",
+  "services.rows_missing": "Añade estas filas a [ui.sidebar.agents] rows en {path} y ejecuta herdr server reload-config:"
 }

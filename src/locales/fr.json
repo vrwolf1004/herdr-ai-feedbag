@@ -17,5 +17,12 @@
   "error.rate_limited": "limite de requêtes",
   "error.network": "erreur réseau : {detail}",
   "error.http": "HTTP {detail}",
-  "error.no_quota_data": "aucune donnée de quota"
+  "error.no_quota_data": "aucune donnée de quota",
+  "services.title": "choisir les services",
+  "services.help": "↑↓ déplacer · Espace activer/désactiver · Entrée enregistrer · q annuler",
+  "services.status_ok": "connecté",
+  "services.status_missing": "non connecté",
+  "services.status_expired": "connexion expirée",
+  "services.need_one": "gardez au moins un service",
+  "services.rows_missing": "Ajoutez ces lignes à [ui.sidebar.agents] rows dans {path}, puis lancez herdr server reload-config :"
 }

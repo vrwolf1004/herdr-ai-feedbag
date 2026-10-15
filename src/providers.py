@@ -2,6 +2,7 @@
 
 토큰을 갱신하거나 파일을 고쳐 쓰지 않는다. 그 토큰은 사용자의 에이전트 세션이 쓰는 것이라
 여기서 갱신하면 에이전트 쪽 로그인이 깨질 수 있다. 만료됐으면 해당 CLI 를 한 번 쓰면 갱신된다.
+예외로 Gemini 는 토큰이 1시간짜리라, 바뀌지 않는 refresh token 으로 새 access token 을 받아 메모리에만 둔다.
 
 fetch_*() 는 Usage 를 돌려준다. 실패해도 예외 대신 Usage.error 에 이유 코드를 담는다.
 코드는 화면에서 locales 의 error.<코드> 로 번역하고, detail 은 그 문장의 {detail} 에 들어간다.
@@ -9,10 +10,12 @@ fetch_*() 는 Usage 를 돌려준다. 실패해도 예외 대신 Usage.error 에
 
 import json
 import os
+import re
 import subprocess
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -117,8 +120,11 @@ def _decode_secret(blob):
     return blob.decode("utf-8", errors="ignore").strip()
 
 
-def _windows_copilot_cli_tokens():
-    """Copilot CLI 가 Windows 자격 증명 관리자에 저장한 토큰. target 은 '<account>.copilot-cli' 다."""
+def _windows_copilot_cli_tokens(account=None):
+    """Copilot CLI 가 Windows 자격 증명 관리자에 저장한 토큰. target 은 '<account>.copilot-cli' 다.
+
+    account 를 주면 그 계정 항목만 읽는다.
+    """
     import ctypes
     from ctypes import wintypes
 
@@ -134,7 +140,8 @@ def _windows_copilot_cli_tokens():
     advapi32 = ctypes.WinDLL("advapi32", use_last_error=True)
     count = wintypes.DWORD()
     credentials = ctypes.POINTER(ctypes.POINTER(Credential))()
-    if not advapi32.CredEnumerateW(f"*.{COPILOT_CLI_SERVICE}", 0, ctypes.byref(count), ctypes.byref(credentials)):
+    target = f"{account}.{COPILOT_CLI_SERVICE}" if account else f"*.{COPILOT_CLI_SERVICE}"
+    if not advapi32.CredEnumerateW(target, 0, ctypes.byref(count), ctypes.byref(credentials)):
         return []
     tokens = []
     try:
@@ -158,16 +165,21 @@ def _command_secret(command):
     return [value] if value else []
 
 
-def copilot_cli_tokens():
+def copilot_cli_tokens(account=None):
     if sys.platform == "win32":
-        return _windows_copilot_cli_tokens()
+        return _windows_copilot_cli_tokens(account)
     if sys.platform == "darwin":
-        return _command_secret(["security", "find-generic-password", "-s", COPILOT_CLI_SERVICE, "-w"])
-    return _command_secret(["secret-tool", "lookup", "service", COPILOT_CLI_SERVICE])
+        extra = ["-a", account] if account else []
+        return _command_secret(["security", "find-generic-password", "-s", COPILOT_CLI_SERVICE, *extra, "-w"])
+    extra = ["username", account] if account else []
+    return _command_secret(["secret-tool", "lookup", "service", COPILOT_CLI_SERVICE, *extra])
 
 
 def copilot_tokens(config_dir):
-    """시도할 토큰 후보. 우선순위: 환경 변수 → 플러그인 config 의 copilot-token 파일 → Copilot CLI 로그인."""
+    """시도할 토큰 후보. 우선순위: 환경 변수 → 플러그인 config 의 copilot-token 파일 → Copilot CLI 로그인.
+
+    config.json 에 "copilot_account" 가 있으면 Copilot CLI 로그인 중 그 계정만 쓴다.
+    """
     for name in ("FEEDBAG_COPILOT_TOKEN", "GH_TOKEN", "GITHUB_TOKEN"):
         value = os.environ.get(name, "").strip()
         if value:
@@ -180,7 +192,8 @@ def copilot_tokens(config_dir):
                 return [value]
         except OSError:
             pass
-    return copilot_cli_tokens()
+    account = str(read_config(config_dir).get("copilot_account") or "").strip()
+    return copilot_cli_tokens(account or None)
 
 
 def parse_copilot(data):
@@ -311,15 +324,104 @@ def parse_gemini(data):
     return Usage("gemini", windows)
 
 
+GEMINI_TOKEN_URL = "https://oauth2.googleapis.com/token"
+GEMINI_CLIENT_FILES = (
+    # Gemini CLI 설치본에서 OAuth client id/secret 을 찾을 파일. 버전마다 위치가 달라 여러 곳을 본다.
+    ("@google", "gemini-cli", "node_modules", "@google", "gemini-cli-core", "dist", "src", "code_assist", "oauth2.js"),
+    ("@google", "gemini-cli-core", "dist", "src", "code_assist", "oauth2.js"),
+    ("@google", "gemini-cli", "bundle", "gemini.js"),
+)
+_gemini_client = None    # (client_id, client_secret), 한 번 찾으면 기억한다
+_gemini_memory = {}      # 메모리에서 갱신한 access token: {"refresh_token", "access_token", "expires_at"}
+
+
+def _npm_roots():
+    roots = []
+    if os.environ.get("APPDATA"):
+        roots.append(os.path.join(os.environ["APPDATA"], "npm", "node_modules"))
+    roots += ["/usr/local/lib/node_modules", "/usr/lib/node_modules", "/opt/homebrew/lib/node_modules",
+              os.path.expanduser("~/.npm-global/lib/node_modules")]
+    try:
+        npm = "npm.cmd" if sys.platform == "win32" else "npm"
+        completed = subprocess.run([npm, "root", "-g"], capture_output=True, text=True, timeout=10)
+        if completed.returncode == 0 and completed.stdout.strip():
+            roots.insert(0, completed.stdout.strip())
+    except (OSError, subprocess.SubprocessError):
+        pass
+    return roots
+
+
+def gemini_client():
+    """Gemini CLI 의 OAuth client. 환경 변수가 있으면 그것, 없으면 설치된 Gemini CLI 소스에서 읽는다."""
+    global _gemini_client
+    if os.environ.get("FEEDBAG_GEMINI_CLIENT_ID") and os.environ.get("FEEDBAG_GEMINI_CLIENT_SECRET"):
+        return os.environ["FEEDBAG_GEMINI_CLIENT_ID"], os.environ["FEEDBAG_GEMINI_CLIENT_SECRET"]
+    if _gemini_client is None:
+        _gemini_client = ()
+        for root in _npm_roots():
+            for parts in GEMINI_CLIENT_FILES:
+                try:
+                    with open(os.path.join(root, *parts), encoding="utf-8", errors="ignore") as file:
+                        source = file.read()
+                except OSError:
+                    continue
+                client_id = re.search(r"OAUTH_CLIENT_ID\s*=\s*['\"]([^'\"]+)", source)
+                secret = re.search(r"OAUTH_CLIENT_SECRET\s*=\s*['\"]([^'\"]+)", source)
+                if client_id and secret:
+                    _gemini_client = (client_id.group(1), secret.group(1))
+                    return _gemini_client
+    return _gemini_client or None
+
+
+def _refresh_gemini(refresh_token):
+    """refresh token 으로 새 access token 을 받아 메모리에만 둔다. 파일은 고쳐 쓰지 않는다.
+
+    Google 은 refresh token 을 바꾸지 않으므로 Gemini CLI 쪽 로그인은 그대로 유효하다.
+    """
+    cached = _gemini_memory
+    if cached.get("refresh_token") == refresh_token and cached.get("expires_at", 0) > time.time() + 60:
+        return cached["access_token"]
+    client = gemini_client()
+    if not client:
+        return None
+    body = urllib.parse.urlencode({
+        "client_id": client[0], "client_secret": client[1],
+        "refresh_token": refresh_token, "grant_type": "refresh_token",
+    }).encode("utf-8")
+    request = urllib.request.Request(GEMINI_TOKEN_URL, data=body, headers={
+        "User-Agent": USER_AGENT, "Content-Type": "application/x-www-form-urlencoded"})
+    with urllib.request.urlopen(request, timeout=HTTP_TIMEOUT_SECONDS) as response:
+        data = json.load(response)
+    token = data.get("access_token")
+    if token:
+        _gemini_memory.update(refresh_token=refresh_token, access_token=token,
+                              expires_at=time.time() + float(data.get("expires_in", 3600)))
+    return token
+
+
+def _gemini_expired(creds):
+    expiry_ms = creds.get("expiry_date")
+    return bool(expiry_ms) and float(expiry_ms) / 1000 < time.time() + 60
+
+
 def fetch_gemini():
-    """Gemini CLI 의 Google 로그인으로 일일 모델 한도를 본다. 토큰이 1시간짜리라 만료되면 gemini 를 한 번 실행해야 한다."""
+    """Gemini CLI 의 Google 로그인으로 일일 모델 한도를 본다.
+
+    토큰이 1시간짜리라 만료됐으면 refresh token 으로 메모리에서만 새로 받는다(_refresh_gemini).
+    """
     creds = _read_json(gemini_creds_path()) or {}
     token = creds.get("access_token")
     if not token:
         return Usage("gemini", error="not_logged_in")
-    expiry_ms = creds.get("expiry_date")
-    if expiry_ms and float(expiry_ms) / 1000 < time.time():
+    try:
+        if _gemini_expired(creds):
+            token = _refresh_gemini(creds["refresh_token"]) if creds.get("refresh_token") else None
+            if not token:
+                return Usage("gemini", error="login_expired")
+    except urllib.error.HTTPError:
         return Usage("gemini", error="login_expired")
+    except (OSError, ValueError) as error:
+        return Usage("gemini", error="network", detail=str(error))
     headers = {"Authorization": f"Bearer {token}"}
     try:
         loaded = _get_json(f"{GEMINI_API_URL}:loadCodeAssist", headers,
@@ -353,11 +455,39 @@ def fetch(name, config_dir=None):
     raise ValueError(f"unknown provider: {name}")
 
 
+def config_path(config_dir):
+    return os.path.join(config_dir, "config.json") if config_dir else None
+
+
+def read_config(config_dir):
+    path = config_path(config_dir)
+    config = _read_json(path) if path else None
+    return config if isinstance(config, dict) else {}
+
+
+def login_status(name, config_dir=None):
+    """서비스 선택 화면에 보여 줄 로그인 상태: ok, missing, expired. 네트워크 요청은 하지 않는다."""
+    if name == "claude":
+        return "ok" if claude_access_token() else "missing"
+    if name == "copilot":
+        return "ok" if copilot_tokens(config_dir) else "missing"
+    if name == "codex":
+        tokens = (_read_json(codex_auth_path()) or {}).get("tokens") or {}
+        return "ok" if tokens.get("access_token") else "missing"
+    if name == "gemini":
+        creds = _read_json(gemini_creds_path()) or {}
+        if not creds.get("access_token"):
+            return "missing"
+        if _gemini_expired(creds) and not (creds.get("refresh_token") and gemini_client()):
+            return "expired"
+        return "ok"
+    raise ValueError(f"unknown provider: {name}")
+
+
 def enabled_providers(config_dir=None):
     """보여 줄 서비스. config.json 의 "providers" 가 있으면 그 순서대로 쓰고,
     없으면 Claude, Copilot 은 항상, Codex, Gemini 는 로그인 파일이 있을 때만 보여 준다."""
-    config = _read_json(os.path.join(config_dir, "config.json")) if config_dir else None
-    chosen = (config or {}).get("providers")
+    chosen = read_config(config_dir).get("providers")
     if isinstance(chosen, list):
         names = [name for name in chosen if name in ALL_PROVIDERS]
         if names:

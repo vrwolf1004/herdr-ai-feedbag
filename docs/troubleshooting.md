@@ -1,11 +1,11 @@
 # 문제 해결
 
-먼저 `feedbag` workspace의 pane을 열어 보세요. 서비스별 오류가 그대로 보입니다.
+먼저 `herdr-dock` workspace의 feedbag pane을 열어 보세요. 서비스별 오류가 그대로 보입니다.
 
 ## 사이드바에 블록이 안 보인다
 
 1. `config.toml`에 `$fb_claude`, `$fb_copilot` 줄이 있는지 확인하고 `herdr server reload-config`를 실행합니다. ([사용법 2장](usage.ko.md#2-사이드바-줄-추가))
-2. Spaces 목록에 `feedbag` workspace가 있는지 확인합니다. 없으면 `start` 액션을 실행합니다.
+2. Spaces 목록에 `herdr-dock` workspace가 있는지 확인합니다. 없으면 `start` 액션을 실행합니다.
 3. 플러그인 로그를 봅니다.
 
    ```sh

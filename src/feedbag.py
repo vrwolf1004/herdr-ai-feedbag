@@ -1,8 +1,9 @@
 """herdr-ai-feedbag: Claude Code / GitHub Copilot 사용량을 herdr 사이드바 맨 아래에 한 번만 보여 준다.
 
 동작 방식
-  - "feedbag" 이라는 작은 workspace 를 만들고 그 pane 을 가짜 agent(feedbag)로 등록한다.
-    agents 패널은 spaces 순서로 정렬되므로 이 workspace 를 항상 맨 뒤로 옮기면 블록이 맨 아래에 온다.
+  - 공용 "herdr-dock" workspace 에 pane 하나를 두고 가짜 agent(feedbag)로 등록한다. dock 이 없으면 만들고,
+    이미 있으면(다른 플러그인이 만든 경우) pane 을 나눠 들어간다.
+    agents 패널은 spaces 순서로 정렬되므로 dock 을 항상 맨 뒤로 옮기면 블록이 맨 아래에 온다.
   - 그 pane 에서 host 루프가 돈다. 별도 백그라운드 프로세스를 두지 않으므로 pane 을 닫으면 같이 끝난다.
   - 사용량 숫자는 $fb_claude / $fb_copilot 토큰으로 이 pane 에만 붙는다. 다른 agent 행에는 나오지 않는다.
 
@@ -27,7 +28,10 @@ import render
 
 PLUGIN_ID = "herdr-ai-feedbag"
 SOURCE = f"plugin:{PLUGIN_ID}"
-WS_LABEL = "feedbag"
+# 하단 고정 블록을 두는 공용 workspace. 다른 플러그인도 같은 이름을 찾아 pane 을 나눠 들어오면
+# agents 패널에서 feedbag 과 함께 맨 아래에 모인다.
+DOCK_LABEL = "herdr-dock"
+LEGACY_WS_LABEL = "feedbag"
 AGENT_ID = "feedbag"
 DISPLAY_AGENT = "feedbag"
 
@@ -104,12 +108,15 @@ class State:
 # ---------------------------------------------------------------- workspace / pane
 
 
-def find_workspace(workspaces, state):
-    ids = {w["workspace_id"] for w in workspaces}
-    stored = state.read("workspace.id")
-    if stored in ids:
-        return stored
-    return next((w["workspace_id"] for w in workspaces if w.get("label") == WS_LABEL), None)
+def find_workspace(workspaces):
+    by_label = {w.get("label"): w["workspace_id"] for w in workspaces}
+    if DOCK_LABEL in by_label:
+        return by_label[DOCK_LABEL]
+    legacy = by_label.get(LEGACY_WS_LABEL)
+    if legacy:
+        # 0.1.0 은 자기 전용 "feedbag" workspace 를 썼다. 공용 dock 으로 이름만 바꿔 이어 쓴다.
+        herdr_api.cli("workspace", "rename", legacy, DOCK_LABEL, check=False)
+    return legacy
 
 
 def workspace_panes(workspace_id):
@@ -117,27 +124,43 @@ def workspace_panes(workspace_id):
     return [p for p in panes if p["workspace_id"] == workspace_id]
 
 
-def pick_pane(panes, stored_pane):
-    """host 를 띄울 pane. 다른 플러그인(herdr-sidebar 등)이 끼워 넣은 pane 은 label 이나 token 이 붙어 있어 피한다."""
+def is_sidebar(pane):
+    return any(name.startswith(SIDEBAR_TOKEN_PREFIX) for name in (pane.get("tokens") or {}))
+
+
+def pick_pane(panes, stored_pane, agent_panes):
+    """dock 안에서 host 를 띄울 pane.
+
+    기억해 둔 pane 이 살아 있으면 그것, 아니면 아무도 쓰지 않는 빈 pane(label·token·agent 없음).
+    다른 플러그인 블록이나 herdr-sidebar pane 은 건드리지 않는다. 빈 pane 이 없으면 None.
+    """
     ids = [p["pane_id"] for p in panes]
     if stored_pane in ids:
         return stored_pane
-    plain = [p["pane_id"] for p in panes if not p.get("label") and not p.get("tokens")]
-    return (plain or ids or [None])[0]
+    free = [p["pane_id"] for p in panes
+            if not p.get("label") and not p.get("tokens") and p["pane_id"] not in agent_panes]
+    return free[0] if free else None
 
 
 def ensure_workspace(state):
+    """공용 dock workspace 와 그 안의 feedbag pane 을 확보한다. dock 이 있으면 pane 을 하나 나눠 들어간다."""
     workspaces = herdr_api.cli("workspace", "list").get("workspaces", [])
-    workspace_id = find_workspace(workspaces, state)
+    workspace_id = find_workspace(workspaces)
     if workspace_id is None:
         # cwd 를 git 저장소가 아닌 state dir 로 두어 branch/git 표시가 비게 한다.
-        created = herdr_api.cli("workspace", "create", "--label", WS_LABEL, "--cwd", state.directory, "--no-focus")
+        created = herdr_api.cli("workspace", "create", "--label", DOCK_LABEL, "--cwd", state.directory, "--no-focus")
         workspace_id = created["workspace"]["workspace_id"]
         state.remove("pane.id")
     state.write("workspace.id", workspace_id)
-    pane_id = pick_pane(workspace_panes(workspace_id), state.read("pane.id"))
+    panes = workspace_panes(workspace_id)
+    agent_panes = {a["pane_id"] for a in herdr_api.cli("agent", "list").get("agents", [])}
+    pane_id = pick_pane(panes, state.read("pane.id"), agent_panes)
     if pane_id is None:
-        raise herdr_api.HerdrError(f"workspace {workspace_id} has no pane")
+        anchor = next((p["pane_id"] for p in panes if not is_sidebar(p)), None)
+        if anchor is None:
+            raise herdr_api.HerdrError(f"workspace {workspace_id} has no pane")
+        split = herdr_api.cli("pane", "split", anchor, "--direction", "down", "--cwd", state.directory)
+        pane_id = split["pane"]["pane_id"]
     state.write("pane.id", pane_id)
     return workspace_id, pane_id
 
@@ -196,8 +219,15 @@ def cmd_stop(args):
     while state.host_alive() and time.time() < deadline:
         time.sleep(0.2)
     workspace_id = state.read("workspace.id")
+    pane_id = state.read("pane.id")
     if workspace_id:
-        herdr_api.cli("workspace", "close", workspace_id, check=False)
+        # dock 은 다른 플러그인과 같이 쓴다. 자기 pane 만 닫고, 남은 게 herdr-sidebar 뿐이면 workspace 도 닫는다.
+        others = [p for p in workspace_panes(workspace_id) if p["pane_id"] != pane_id and not is_sidebar(p)]
+        if others:
+            if pane_id:
+                herdr_api.cli("pane", "close", pane_id, check=False)
+        else:
+            herdr_api.cli("workspace", "close", workspace_id, check=False)
     for name in ("workspace.id", "pane.id", "heartbeat"):
         state.remove(name)
     return 0
@@ -281,7 +311,7 @@ class Host:
         sidebars = {
             p["pane_id"] for p in panes
             if p["pane_id"] != self.pane_id
-            and any(name.startswith(SIDEBAR_TOKEN_PREFIX) for name in (p.get("tokens") or {}))
+            and is_sidebar(p)
         }
         for pane_id in list(self.sidebar_seen):
             if pane_id not in sidebars:
@@ -320,7 +350,7 @@ class Host:
                 time.sleep(TICK_SECONDS)
         finally:
             sys.stdout.write("\033[?25h")
-            herdr_api.try_request("pane.release_agent", {"pane_id": self.pane_id, "source": SOURCE})
+            herdr_api.try_request("pane.release_agent", {"pane_id": self.pane_id, "source": SOURCE, "agent": AGENT_ID})
             self.state.remove("heartbeat")
             self.state.remove("stop")
         return 0

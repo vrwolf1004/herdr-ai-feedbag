@@ -30,7 +30,7 @@ herdr는 사이드바 레이아웃에 들어 있는 토큰만 그립니다. herd
 ```toml
 [ui.sidebar.agents]
 rows = [
-  ["state_icon", "machine", { token = "workspace", rules = [{ equals = "feedbag", hide = true }] }, "tab"],
+  ["state_icon", "machine", { token = "workspace", rules = [{ equals = "herdr-dock", hide = true }] }, "tab"],
   ["agent"],
   [{ token = "$fb_claude", fg = "#d97757", rules = [{ starts_with = "!", fg = "#ff5f5f", bold = true }] }],
   [{ token = "$fb_copilot", fg = "#a371f7", rules = [{ starts_with = "!", fg = "#ff5f5f", bold = true }] }],
@@ -38,7 +38,7 @@ rows = [
 ```
 
 - `$fb_claude`, `$fb_copilot`은 feedbag 블록에만 보고되므로 다른 agent에서는 이 줄이 사라집니다.
-- `workspace` rule은 블록 첫 줄에 `feedbag`이 두 번 나오지 않게 숨깁니다.
+- `workspace` rule은 블록 첫 줄에 dock workspace 이름(`herdr-dock`)이 나오지 않게 숨깁니다.
 - `!` rule은 경고 기준을 넘은 줄을 빨간색으로 바꿉니다. 색은 원하는 대로 바꿔도 됩니다.
 - `ui.agent_panel_sort`는 기본값 `"spaces"`로 두세요. `"priority"`에서는 맨 아래에 고정되지 않습니다.
 
@@ -50,7 +50,7 @@ herdr 서버가 시작될 때와 workspace가 만들어질 때 자동으로 시�
 | --- | --- |
 | `start` | 블록이 없으면 만들고 host를 시작 |
 | `refresh` | 지금 바로 다시 조회 |
-| `stop` | host를 멈추고 `feedbag` workspace를 닫음 |
+| `stop` | host를 멈추고 feedbag pane을 닫음 (dock에 다른 블록이 없으면 workspace도 닫음) |
 
 Windows에서는 액션 id 뒤에 `-windows`가 붙습니다.
 
@@ -97,4 +97,4 @@ herdr plugin action invoke herdr-ai-feedbag.start           # linux / macos
 
 ## 7. herdr-sidebar와 함께 쓸 때
 
-[herdr-sidebar](https://github.com/alexarthurs/herdr-sidebar)는 포커스된 모든 탭에 탐색기를 띄우므로 `feedbag` workspace에도 뜹니다. feedbag이 이를 발견하면 1초 뒤 그 사이드바의 숨기기 키(`b`)를 보냅니다. herdr-sidebar가 그 탭을 기억하고 다시 열지 않습니다.
+[herdr-sidebar](https://github.com/alexarthurs/herdr-sidebar)는 포커스된 모든 탭에 탐색기를 띄우므로 `herdr-dock` workspace에도 뜹니다. feedbag이 이를 발견하면 1초 뒤 그 사이드바의 숨기기 키(`b`)를 보냅니다. herdr-sidebar가 그 탭을 기억하고 다시 열지 않습니다.

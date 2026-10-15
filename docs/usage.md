@@ -30,7 +30,7 @@ herdr only renders custom tokens that appear in your sidebar layout. Add these r
 ```toml
 [ui.sidebar.agents]
 rows = [
-  ["state_icon", "machine", { token = "workspace", rules = [{ equals = "feedbag", hide = true }] }, "tab"],
+  ["state_icon", "machine", { token = "workspace", rules = [{ equals = "herdr-dock", hide = true }] }, "tab"],
   ["agent"],
   [{ token = "$fb_claude", fg = "#d97757", rules = [{ starts_with = "!", fg = "#ff5f5f", bold = true }] }],
   [{ token = "$fb_copilot", fg = "#a371f7", rules = [{ starts_with = "!", fg = "#ff5f5f", bold = true }] }],
@@ -38,7 +38,7 @@ rows = [
 ```
 
 - `$fb_claude` / `$fb_copilot` are reported only on the feedbag block, so these rows disappear on every other agent.
-- The `workspace` rule hides the duplicate `feedbag` label on the block's first row.
+- The `workspace` rule hides the dock workspace name (`herdr-dock`) on the block's first row.
 - The `!` rule turns a line red while it is over the warning threshold. Change the colors as you like.
 - Keep `ui.agent_panel_sort` at `"spaces"` (the default). With `"priority"` the block is not pinned to the bottom.
 
@@ -50,7 +50,7 @@ The block starts automatically when the herdr server starts and when a workspace
 | --- | --- |
 | `start` | Create the block if missing and start the host |
 | `refresh` | Fetch usage now |
-| `stop` | Stop the host and close the `feedbag` workspace |
+| `stop` | Stop the host and close the feedbag pane (and the dock workspace if nothing else is in it) |
 
 On Windows the action ids end with `-windows`:
 
@@ -107,4 +107,4 @@ The short sidebar labels (`cld`, `cop`, `wk`, `rst`) stay the same in every lang
 
 ## 7. Using it with herdr-sidebar
 
-[herdr-sidebar](https://github.com/alexarthurs/herdr-sidebar) docks its explorer into every focused tab, including the `feedbag` workspace. feedbag notices it and sends the sidebar's own hide key (`b`) after one second. herdr-sidebar then remembers that tab and stops reopening it.
+[herdr-sidebar](https://github.com/alexarthurs/herdr-sidebar) docks its explorer into every focused tab, including the `herdr-dock` workspace. feedbag notices it and sends the sidebar's own hide key (`b`) after one second. herdr-sidebar then remembers that tab and stops reopening it.

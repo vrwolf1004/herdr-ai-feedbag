@@ -1,0 +1,19 @@
+{
+  "detail.subtitle": "Utilisation IA de votre troupeau",
+  "detail.resets": "réinit. {time}",
+  "detail.unlimited": "illimité",
+  "detail.last_failed": "dernière actualisation échouée : {error}",
+  "detail.footer": "mis à jour {time} · Ctrl+C pour arrêter",
+  "window.five_hour": "5 h",
+  "window.seven_day": "semaine",
+  "window.premium_interactions": "premium",
+  "window.chat": "chat",
+  "window.completions": "inline",
+  "error.loading": "chargement…",
+  "error.not_logged_in": "non connecté",
+  "error.login_expired": "connexion expirée",
+  "error.rate_limited": "limite de requêtes",
+  "error.network": "erreur réseau : {detail}",
+  "error.http": "HTTP {detail}",
+  "error.no_quota_data": "aucune donnée de quota"
+}

@@ -1,0 +1,19 @@
+{
+  "detail.subtitle": "AI usage for your herd",
+  "detail.resets": "resets {time}",
+  "detail.unlimited": "unlimited",
+  "detail.last_failed": "last refresh failed: {error}",
+  "detail.footer": "updated {time} · Ctrl+C to stop",
+  "window.five_hour": "5h",
+  "window.seven_day": "week",
+  "window.premium_interactions": "premium",
+  "window.chat": "chat",
+  "window.completions": "inline",
+  "error.loading": "loading…",
+  "error.not_logged_in": "not logged in",
+  "error.login_expired": "login expired",
+  "error.rate_limited": "rate limited",
+  "error.network": "network error: {detail}",
+  "error.http": "HTTP {detail}",
+  "error.no_quota_data": "no quota data"
+}

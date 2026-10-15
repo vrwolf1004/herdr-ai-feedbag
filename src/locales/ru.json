@@ -1,0 +1,19 @@
+{
+  "detail.subtitle": "Использование ИИ вашим стадом",
+  "detail.resets": "сброс {time}",
+  "detail.unlimited": "без лимита",
+  "detail.last_failed": "последнее обновление не удалось: {error}",
+  "detail.footer": "обновлено {time} · Ctrl+C — остановить",
+  "window.five_hour": "5 ч",
+  "window.seven_day": "неделя",
+  "window.premium_interactions": "премиум",
+  "window.chat": "чат",
+  "window.completions": "inline",
+  "error.loading": "загрузка…",
+  "error.not_logged_in": "нет входа",
+  "error.login_expired": "вход истёк",
+  "error.rate_limited": "лимит запросов",
+  "error.network": "ошибка сети: {detail}",
+  "error.http": "HTTP {detail}",
+  "error.no_quota_data": "нет данных о квоте"
+}

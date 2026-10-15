@@ -1,0 +1,38 @@
+# 문제 해결
+
+먼저 `feedbag` workspace의 pane을 열어 보세요. 서비스별 오류가 그대로 보입니다.
+
+## 사이드바에 블록이 안 보인다
+
+1. `config.toml`에 `$fb_claude`, `$fb_copilot` 줄이 있는지 확인하고 `herdr server reload-config`를 실행합니다. ([사용법 2장](usage.ko.md#2-사이드바-줄-추가))
+2. Spaces 목록에 `feedbag` workspace가 있는지 확인합니다. 없으면 `start` 액션을 실행합니다.
+3. 플러그인 로그를 봅니다.
+
+   ```sh
+   herdr plugin log list --plugin herdr-ai-feedbag
+   ```
+
+## 블록이 맨 아래에 있지 않다
+
+`ui.agent_panel_sort`가 `"priority"`면 상태 순으로 정렬되어 고정되지 않습니다. 기본값 `"spaces"`로 두세요. 새 workspace가 생기면 5초 안에 다시 맨 아래로 옮겨집니다.
+
+## `not logged in` / `login expired`
+
+- Claude: Claude Code를 한 번 실행하면 토큰이 갱신됩니다. `~/.claude/.credentials.json`이 있는지 확인하세요.
+- Copilot: Copilot CLI에서 `/login` 하거나, `FEEDBAG_COPILOT_TOKEN` 환경 변수나 config 폴더의 `copilot-token` 파일에 토큰을 넣으세요.
+
+## `network: ...` 오류
+
+일시적인 네트워크 문제면 숫자가 없을 때는 30초, 있을 때는 다음 주기에 다시 시도합니다. 바로 다시 조회하려면 `refresh` 액션을 실행합니다.
+
+## `rate limited`
+
+조회 주기를 3배로 늘려 자동으로 물러섭니다. 그대로 두면 됩니다.
+
+## feedbag pane을 실수로 닫았다 / Ctrl+C로 멈췄다
+
+`start` 액션을 실행하거나, workspace를 하나 만들면 자동으로 다시 뜹니다. host가 멈추면 사이드바 숫자는 15초 뒤 사라집니다.
+
+## Copilot 숫자가 이상하다
+
+Copilot 사용량은 GitHub 내부 엔드포인트(`copilot_internal/user`)에서 가져옵니다. GitHub가 형식을 바꾸면 `no quota data`가 나올 수 있습니다. 이슈로 알려 주세요.

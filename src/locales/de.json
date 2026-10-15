@@ -1,0 +1,19 @@
+{
+  "detail.subtitle": "KI-Nutzung deiner Herde",
+  "detail.resets": "Reset {time}",
+  "detail.unlimited": "unbegrenzt",
+  "detail.last_failed": "letzte Abfrage fehlgeschlagen: {error}",
+  "detail.footer": "aktualisiert {time} · Strg+C zum Beenden",
+  "window.five_hour": "5 Std.",
+  "window.seven_day": "Woche",
+  "window.premium_interactions": "Premium",
+  "window.chat": "Chat",
+  "window.completions": "Inline",
+  "error.loading": "lädt…",
+  "error.not_logged_in": "nicht angemeldet",
+  "error.login_expired": "Anmeldung abgelaufen",
+  "error.rate_limited": "Ratenlimit erreicht",
+  "error.network": "Netzwerkfehler: {detail}",
+  "error.http": "HTTP {detail}",
+  "error.no_quota_data": "keine Kontingentdaten"
+}

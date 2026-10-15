@@ -1,0 +1,19 @@
+{
+  "detail.subtitle": "群れの AI 使用量",
+  "detail.resets": "{time} にリセット",
+  "detail.unlimited": "無制限",
+  "detail.last_failed": "前回の取得に失敗: {error}",
+  "detail.footer": "{time} 更新 · Ctrl+C で停止",
+  "window.five_hour": "5時間",
+  "window.seven_day": "週間",
+  "window.premium_interactions": "プレミアム",
+  "window.chat": "チャット",
+  "window.completions": "補完",
+  "error.loading": "読み込み中…",
+  "error.not_logged_in": "未ログイン",
+  "error.login_expired": "ログイン期限切れ",
+  "error.rate_limited": "レート制限中",
+  "error.network": "ネットワークエラー: {detail}",
+  "error.http": "HTTP {detail}",
+  "error.no_quota_data": "使用量データなし"
+}

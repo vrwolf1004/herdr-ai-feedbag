@@ -1,0 +1,19 @@
+{
+  "detail.subtitle": "Uso de IA de tu rebaño",
+  "detail.resets": "se reinicia {time}",
+  "detail.unlimited": "ilimitado",
+  "detail.last_failed": "última actualización fallida: {error}",
+  "detail.footer": "actualizado {time} · Ctrl+C para detener",
+  "window.five_hour": "5 h",
+  "window.seven_day": "semana",
+  "window.premium_interactions": "premium",
+  "window.chat": "chat",
+  "window.completions": "inline",
+  "error.loading": "cargando…",
+  "error.not_logged_in": "sin sesión",
+  "error.login_expired": "sesión caducada",
+  "error.rate_limited": "límite de solicitudes",
+  "error.network": "error de red: {detail}",
+  "error.http": "HTTP {detail}",
+  "error.no_quota_data": "sin datos de cuota"
+}

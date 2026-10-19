@@ -130,17 +130,35 @@ def is_sidebar(pane):
     return any(name.startswith(SIDEBAR_TOKEN_PREFIX) for name in (pane.get("tokens") or {}))
 
 
-def pick_pane(panes, stored_pane, agent_panes):
+def claimed_by_others(state_dir):
+    """같은 plugins 폴더의 다른 플러그인이 pane.id 로 찜해 둔 pane 목록. 그 pane 은 건드리지 않는다."""
+    plugins_dir = os.path.dirname(os.path.abspath(state_dir))
+    own = os.path.basename(os.path.abspath(state_dir))
+    claimed = set()
+    for name in os.listdir(plugins_dir) if os.path.isdir(plugins_dir) else []:
+        if name == own:
+            continue
+        try:
+            with open(os.path.join(plugins_dir, name, "pane.id"), encoding="utf-8") as f:
+                claimed.add(f.read().strip())
+        except OSError:
+            pass
+    return claimed
+
+
+def pick_pane(panes, stored_pane, agent_panes, claimed=frozenset()):
     """dock 안에서 host 를 띄울 pane.
 
-    기억해 둔 pane 이 살아 있으면 그것, 아니면 아무도 쓰지 않는 빈 pane(label·token·agent 없음).
-    다른 플러그인 블록이나 herdr-sidebar pane 은 건드리지 않는다. 빈 pane 이 없으면 None.
+    기억해 둔 pane 이 살아 있고 다른 플러그인이 찜하지 않았으면 그것, 아니면 아무도 쓰지 않는 빈 pane
+    (label·token·agent 없음, 다른 플러그인이 찜하지 않은 것). 다른 플러그인 블록이나 herdr-sidebar pane 은
+    건드리지 않는다. 쓸 빈 pane 이 없으면 None 이고, 호출한 쪽이 split 해서 새로 만든다.
     """
     ids = [p["pane_id"] for p in panes]
-    if stored_pane in ids:
+    if stored_pane in ids and stored_pane not in claimed:
         return stored_pane
     free = [p["pane_id"] for p in panes
-            if not p.get("label") and not p.get("tokens") and p["pane_id"] not in agent_panes]
+            if not p.get("label") and not p.get("tokens") and p["pane_id"] not in agent_panes
+            and p["pane_id"] not in claimed]
     return free[0] if free else None
 
 
@@ -156,7 +174,7 @@ def ensure_workspace(state):
     state.write("workspace.id", workspace_id)
     panes = workspace_panes(workspace_id)
     agent_panes = {a["pane_id"] for a in herdr_api.cli("agent", "list").get("agents", [])}
-    pane_id = pick_pane(panes, state.read("pane.id"), agent_panes)
+    pane_id = pick_pane(panes, state.read("pane.id"), agent_panes, claimed_by_others(state.directory))
     if pane_id is None:
         anchor = next((p["pane_id"] for p in panes if not is_sidebar(p)), None)
         if anchor is None:

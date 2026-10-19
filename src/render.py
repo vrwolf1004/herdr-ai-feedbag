@@ -9,6 +9,7 @@
 앞 표시는 항상 한 칸이라 경고가 켜지고 꺼져도 줄이 밀리지 않는다.
 """
 
+import re
 import unicodedata
 from datetime import datetime
 
@@ -135,6 +136,30 @@ def pad(text, width):
     return text + " " * max(1, width - display_width(text))
 
 
+ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def box(*sections, min_inner=44, max_inner=70):
+    """상세 화면을 timekit 패널처럼 테두리 상자에 담는다. 섹션 사이는 가로줄로 나눈다.
+    ANSI 색 코드는 칸 수에서 뺀다."""
+    rows = []
+    for index, section in enumerate(sections):
+        if index:
+            rows.append(None)
+        rows += section
+    widths = [display_width(ANSI_RE.sub("", row)) for row in rows if row is not None]
+    inner = min(max_inner, max([min_inner] + [w + 2 for w in widths]))
+    out = ["╭" + "─" * inner + "╮"]
+    for row in rows:
+        if row is None:
+            out.append("├" + "─" * inner + "┤")
+            continue
+        width = display_width(ANSI_RE.sub("", row))
+        out.append("│ " + row + " " * max(0, inner - 1 - width) + "│")
+    out.append("╰" + "─" * inner + "╯")
+    return out
+
+
 def detail_lines(usages, frame, updated_at):
     lines = [f"{ANSI_BOLD} feedbag{ANSI_RESET}  {ANSI_DIM}{t('detail.subtitle')}{ANSI_RESET}", ""]
     labels = {w.key: t(f"window.{w.key}") for usage in usages for w in usage.windows}
@@ -158,4 +183,7 @@ def detail_lines(usages, frame, updated_at):
         lines.append("")
     stamp = updated_at.strftime("%H:%M:%S") if updated_at else "-"
     lines.append(f" {ANSI_DIM}{t('detail.footer', time=stamp)}{ANSI_RESET}")
-    return lines
+    body = lines[2:-1]
+    while body and not body[-1].strip():
+        body.pop()
+    return box(lines[:1], body, lines[-1:])

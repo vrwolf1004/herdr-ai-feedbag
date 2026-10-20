@@ -105,7 +105,9 @@ class Screen:
         return out
 
     def draw(self):
-        sys.stdout.write("\033[2J\033[H" + "\n".join(self.lines()) + "\n")
+        # 같은 자리에 덮어쓴다. 화면을 지우면 터미널 스크롤백에 이전 프레임이 쌓인다.
+        painted = "\n".join(line + "\033[K" for line in self.lines())
+        sys.stdout.write("\033[H" + painted + "\033[J")
         sys.stdout.flush()
 
 

@@ -362,7 +362,9 @@ class Host:
 
     def draw(self, frame):
         lines = render.detail_lines(list(self.usages.values()), frame, self.updated_at)
-        sys.stdout.write("\033[H\033[2J" + "\n".join(lines) + "\n")
+        # 같은 자리에 덮어쓴다. 화면을 지우면 터미널 스크롤백에 이전 프레임이 쌓인다.
+        painted = "\n".join(line + "\033[K" for line in lines)
+        sys.stdout.write("\033[H" + painted + "\033[J")
         sys.stdout.flush()
 
     def run(self):

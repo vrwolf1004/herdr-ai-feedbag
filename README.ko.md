@@ -7,6 +7,8 @@ Claude Code, GitHub Copilot, OpenAI Codex, Gemini CLI 사용량을 herdr Agents 
 - Windows, Linux, macOS 지원
 - Python 3.8 이상, 표준 라이브러리만 사용
 - herdr 0.9.0 이상
+- `services` 액션으로 보여 줄 서비스를 고를 수 있습니다
+- 7개 언어 지원: 영어, 한국어, 러시아어, 프랑스어, 스페인어, 독일어, 일본어
 
 사이드바 블록 (애니메이션, 80% 이상이면 `!`가 깜빡임):
 
@@ -21,18 +23,20 @@ Claude Code, GitHub Copilot, OpenAI Codex, Gemini CLI 사용량을 herdr Agents 
 대시보드 (`feedbag` pane):
 
 ```text
- feedbag  AI usage for your herd
-
- Claude Code
-   5h      ███▒▓█►░  81%  resets 10/15 13:59
-   wk      ▓█►░░░░░  24%  resets 10/19 01:59
-
- GitHub Copilot
-   premium ▒▓►░░░░░  30%  resets 11/01 09:00
-   chat    unlimited
-   inline  unlimited
-
- updated 13:23:25   [Ctrl+C] stop
+╭─────────────────────────────────────────────╮
+│          🐺  herdr-ai-feedbag  🌕           │
+├─────────────────────────────────────────────┤
+│  Claude Code                                │
+│    5시간    ▓█████►░  81%  10/15 13:59 리셋 │
+│    주간     ▓█►░░░░░  24%  10/19 01:59 리셋 │
+│                                             │
+│  GitHub Copilot                             │
+│    프리미엄 ▓█►░░░░░  30%  11/01 09:00 리셋 │
+│    채팅     무제한                          │
+│    자동완성 무제한                          │
+├─────────────────────────────────────────────┤
+│  13:23:25 갱신   [Ctrl+C] 중지              │
+╰─────────────────────────────────────────────╯
 ```
 
 ## 설치

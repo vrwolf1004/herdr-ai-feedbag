@@ -7,6 +7,8 @@ One feedbag for your herd: Claude Code, GitHub Copilot, OpenAI Codex, and Gemini
 - Windows, Linux, and macOS
 - Python 3.8+; standard library only
 - herdr 0.9.0+
+- Choose which services to show with the `services` action
+- 7 languages: English, Korean, Russian, French, Spanish, German, Japanese
 
 Sidebar block (animated; `!` blinks at 80% or more):
 
@@ -21,18 +23,20 @@ Sidebar block (animated; `!` blinks at 80% or more):
 Dashboard (the `feedbag` pane):
 
 ```text
- feedbag  AI usage for your herd
-
- Claude Code
-   5h      ███▒▓█►░  81%  resets 10/15 13:59
-   wk      ▓█►░░░░░  24%  resets 10/19 01:59
-
- GitHub Copilot
-   premium ▒▓►░░░░░  30%  resets 11/01 09:00
-   chat    unlimited
-   inline  unlimited
-
- updated 13:23:25   [Ctrl+C] stop
+╭──────────────────────────────────────────────╮
+│           🐺  herdr-ai-feedbag  🌕           │
+├──────────────────────────────────────────────┤
+│  Claude Code                                 │
+│    5h      ▓█████►░  81%  resets 10/15 13:59 │
+│    week    ▓█►░░░░░  24%  resets 10/19 01:59 │
+│                                              │
+│  GitHub Copilot                              │
+│    premium ▓█►░░░░░  30%  resets 11/01 09:00 │
+│    chat    unlimited                         │
+│    inline  unlimited                         │
+├──────────────────────────────────────────────┤
+│  updated 13:23:25   [Ctrl+C] stop            │
+╰──────────────────────────────────────────────╯
 ```
 
 ## Install

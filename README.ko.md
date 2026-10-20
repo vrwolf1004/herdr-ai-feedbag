@@ -32,7 +32,7 @@ Claude Code, GitHub Copilot, OpenAI Codex, Gemini CLI 사용량을 herdr Agents 
    chat    unlimited
    inline  unlimited
 
- updated 13:23:25 · Ctrl+C to stop
+ updated 13:23:25   [Ctrl+C] stop
 ```
 
 ## 설치
@@ -49,6 +49,8 @@ herdr plugin install vrwolf1004/herdr-ai-feedbag
 - [Usage guide (English)](docs/usage.md)
 - [문제 해결](docs/troubleshooting.md)
 - [구조 및 동작 방식](docs/architecture.md)
+- [개발과 테스트](docs/development.md)
+- [할 일](docs/todo.md)
 
 ## 개발
 

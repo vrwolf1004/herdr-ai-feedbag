@@ -144,3 +144,11 @@ Codex, Gemini 숫자는 공개 문서가 없는 내부 엔드포인트(`chatgpt.
 ## 8. herdr-sidebar와 함께 쓸 때
 
 [herdr-sidebar](https://github.com/alexarthurs/herdr-sidebar)는 포커스된 모든 탭에 탐색기를 띄우므로 `herdr-dock` workspace에도 뜹니다. feedbag이 이를 발견하면 1초 뒤 그 사이드바의 숨기기 키(`b`)를 보냅니다. herdr-sidebar가 그 탭을 기억하고 다시 열지 않습니다.
+
+## 문서
+
+- [Usage (English)](usage.md)
+- [문제 해결](troubleshooting.md): 증상별 확인 방법
+- [구조 및 동작 방식](architecture.md): 블록이 동작하는 방식
+- [개발](development.md): 코드 구조, 테스트, 서비스 추가
+- [할 일](todo.md): 개선 목록

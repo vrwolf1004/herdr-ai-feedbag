@@ -32,7 +32,7 @@ Dashboard (the `feedbag` pane):
    chat    unlimited
    inline  unlimited
 
- updated 13:23:25 · Ctrl+C to stop
+ updated 13:23:25   [Ctrl+C] stop
 ```
 
 ## Install
@@ -52,6 +52,8 @@ Additional guides (Korean):
 - [사용법](docs/usage.ko.md)
 - [Troubleshooting](docs/troubleshooting.md)
 - [Architecture](docs/architecture.md)
+- [Development and tests](docs/development.md)
+- [TODO](docs/todo.md)
 
 ## Development
 

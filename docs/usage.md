@@ -154,3 +154,11 @@ The short sidebar labels (`cld`, `cop`, `wk`, `rst`) stay the same in every lang
 ## 8. Using it with herdr-sidebar
 
 [herdr-sidebar](https://github.com/alexarthurs/herdr-sidebar) docks its explorer into every focused tab, including the `herdr-dock` workspace. feedbag notices it and sends the sidebar's own hide key (`b`) after one second. herdr-sidebar then remembers that tab and stops reopening it.
+
+## Documentation
+
+- [Usage (한국어)](usage.ko.md)
+- [Troubleshooting](troubleshooting.md): symptoms and checks (Korean)
+- [Architecture](architecture.md): how the block works (Korean)
+- [Development](development.md): code layout, tests, adding services (Korean)
+- [TODO](todo.md): improvement list (Korean)

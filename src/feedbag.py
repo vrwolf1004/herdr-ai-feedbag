@@ -162,6 +162,31 @@ def pick_pane(panes, stored_pane, agent_panes, claimed=frozenset()):
     return free[0] if free else None
 
 
+def grid_split(anchor, cwd):
+    """dock 을 2x2 로 나눈다. 자리는 왼쪽 위, 오른쪽 위, 왼쪽 아래, 오른쪽 아래 순서이고, 빈 자리는 빈 채로 둔다.
+    anchor 로 갈 수 없는 자리는 건너뛴다. 나눌 자리가 없으면 anchor 아래로 나눈다."""
+    layout = herdr_api.cli("pane", "layout", "--pane", anchor)["layout"]
+    area = layout["area"]
+    corners = {}
+    for pane in layout["panes"]:
+        rect = pane["rect"]
+        corners[(0 if rect["x"] <= area["x"] else 1, 0 if rect["y"] <= area["y"] else 1)] = pane["pane_id"]
+    top_left, top_right = corners.get((0, 0)), corners.get((1, 0))
+    bottom_left, bottom_right = corners.get((0, 1)), corners.get((1, 1))
+    if top_left and not top_right:
+        target, direction = top_left, "right"
+    elif top_left and not bottom_left:
+        target, direction = top_left, "down"
+    elif top_right and not bottom_right:
+        target, direction = top_right, "down"
+    elif bottom_left and not bottom_right:
+        target, direction = bottom_left, "right"
+    else:
+        target, direction = anchor, "down"
+    split = herdr_api.cli("pane", "split", target, "--direction", direction, "--cwd", cwd)
+    return split["pane"]["pane_id"]
+
+
 def ensure_workspace(state):
     """공용 dock workspace 와 그 안의 feedbag pane 을 확보한다. dock 이 있으면 pane 을 하나 나눠 들어간다."""
     workspaces = herdr_api.cli("workspace", "list").get("workspaces", [])
@@ -179,8 +204,7 @@ def ensure_workspace(state):
         anchor = next((p["pane_id"] for p in panes if not is_sidebar(p)), None)
         if anchor is None:
             raise herdr_api.HerdrError(f"workspace {workspace_id} has no pane")
-        split = herdr_api.cli("pane", "split", anchor, "--direction", "down", "--cwd", state.directory)
-        pane_id = split["pane"]["pane_id"]
+        pane_id = grid_split(anchor, state.directory)
     state.write("pane.id", pane_id)
     return workspace_id, pane_id
 

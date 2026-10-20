@@ -1,9 +1,8 @@
 {
-  "detail.subtitle": "Utilisation IA de votre troupeau",
   "detail.resets": "réinit. {time}",
   "detail.unlimited": "illimité",
   "detail.last_failed": "dernière actualisation échouée : {error}",
-  "detail.footer": "mis à jour {time} · Ctrl+C pour arrêter",
+  "detail.footer": "mis à jour {time}   [Ctrl+C] arrêter",
   "window.five_hour": "5 h",
   "window.seven_day": "semaine",
   "window.premium_interactions": "premium",

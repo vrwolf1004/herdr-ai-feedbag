@@ -139,17 +139,23 @@ def pad(text, width):
 ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
 
 
-def box(*sections, min_inner=44, max_inner=70):
+def box(*sections, min_inner=44, max_inner=70, title=None):
     """상세 화면을 timekit 패널처럼 테두리 상자에 담는다. 섹션 사이는 가로줄로 나눈다.
-    ANSI 색 코드는 칸 수에서 뺀다."""
+    title 은 가운데 맞춰 맨 위 줄에 두고 구분선을 긋는다. ANSI 색 코드는 칸 수에서 뺀다."""
     rows = []
     for index, section in enumerate(sections):
         if index:
             rows.append(None)
         rows += section
     widths = [display_width(ANSI_RE.sub("", row)) for row in rows if row is not None]
+    if title:
+        widths.append(display_width(ANSI_RE.sub("", title)))
     inner = min(max_inner, max([min_inner] + [w + 2 for w in widths]))
     out = ["╭" + "─" * inner + "╮"]
+    if title:
+        left = max(0, (inner - display_width(ANSI_RE.sub("", title))) // 2)
+        out.append("│" + " " * left + title + " " * max(0, inner - left - display_width(ANSI_RE.sub("", title))) + "│")
+        out.append("├" + "─" * inner + "┤")
     for row in rows:
         if row is None:
             out.append("├" + "─" * inner + "┤")
@@ -161,7 +167,7 @@ def box(*sections, min_inner=44, max_inner=70):
 
 
 def detail_lines(usages, frame, updated_at):
-    lines = [f"{ANSI_BOLD} feedbag{ANSI_RESET}  {ANSI_DIM}{t('detail.subtitle')}{ANSI_RESET}", ""]
+    lines = [""]
     labels = {w.key: t(f"window.{w.key}") for usage in usages for w in usage.windows}
     label_width = max([display_width(label) + 1 for label in labels.values()] + [8])
     for usage in usages:
@@ -182,8 +188,11 @@ def detail_lines(usages, frame, updated_at):
             lines.append(f"   {ANSI_DIM}{t('detail.last_failed', error=error_text(usage))}{ANSI_RESET}")
         lines.append("")
     stamp = updated_at.strftime("%H:%M:%S") if updated_at else "-"
-    lines.append(f" {ANSI_DIM}{t('detail.footer', time=stamp)}{ANSI_RESET}")
-    body = lines[2:-1]
+    # 시간은 보통 색, 단축키([Ctrl+C] ...)는 회색으로 보여 준다.
+    footer = t("detail.footer", time=stamp)
+    split = footer.find("[")
+    lines.append(f" {footer[:split]}{ANSI_DIM}{footer[split:]}{ANSI_RESET}")
+    body = lines[1:-1]
     while body and not body[-1].strip():
         body.pop()
-    return box(lines[:1], body, lines[-1:])
+    return box(body, lines[-1:], title=f"{ANSI_BOLD}🐺  herdr-ai-feedbag  🌕{ANSI_RESET}")

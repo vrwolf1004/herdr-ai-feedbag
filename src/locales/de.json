@@ -1,9 +1,8 @@
 {
-  "detail.subtitle": "KI-Nutzung deiner Herde",
   "detail.resets": "Reset {time}",
   "detail.unlimited": "unbegrenzt",
   "detail.last_failed": "letzte Abfrage fehlgeschlagen: {error}",
-  "detail.footer": "aktualisiert {time} · Strg+C zum Beenden",
+  "detail.footer": "aktualisiert {time}   [Strg+C] beenden",
   "window.five_hour": "5 Std.",
   "window.seven_day": "Woche",
   "window.premium_interactions": "Premium",

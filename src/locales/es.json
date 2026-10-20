@@ -1,9 +1,8 @@
 {
-  "detail.subtitle": "Uso de IA de tu rebaño",
   "detail.resets": "se reinicia {time}",
   "detail.unlimited": "ilimitado",
   "detail.last_failed": "última actualización fallida: {error}",
-  "detail.footer": "actualizado {time} · Ctrl+C para detener",
+  "detail.footer": "actualizado {time}   [Ctrl+C] detener",
   "window.five_hour": "5 h",
   "window.seven_day": "semana",
   "window.premium_interactions": "premium",

@@ -1,9 +1,8 @@
 {
-  "detail.subtitle": "AI usage for your herd",
   "detail.resets": "resets {time}",
   "detail.unlimited": "unlimited",
   "detail.last_failed": "last refresh failed: {error}",
-  "detail.footer": "updated {time} · Ctrl+C to stop",
+  "detail.footer": "updated {time}   [Ctrl+C] stop",
   "window.five_hour": "5h",
   "window.seven_day": "week",
   "window.premium_interactions": "premium",

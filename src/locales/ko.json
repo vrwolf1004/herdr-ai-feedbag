@@ -1,9 +1,8 @@
 {
-  "detail.subtitle": "우리 무리의 AI 사용량",
   "detail.resets": "{time} 리셋",
   "detail.unlimited": "무제한",
   "detail.last_failed": "마지막 조회 실패: {error}",
-  "detail.footer": "{time} 갱신 · Ctrl+C로 중지",
+  "detail.footer": "{time} 갱신   [Ctrl+C] 중지",
   "window.five_hour": "5시간",
   "window.seven_day": "주간",
   "window.premium_interactions": "프리미엄",

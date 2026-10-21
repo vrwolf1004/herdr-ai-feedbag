@@ -66,6 +66,52 @@ class FetchIsolationTest(unittest.TestCase):
         self.assertEqual(host.usages["claude"].error, "RuntimeError")
 
 
+class FindWorkspaceTest(unittest.TestCase):
+    def test_returns_dock_workspace(self):
+        workspaces = [{"label": "other", "workspace_id": "w1"}, {"label": feedbag.DOCK_LABEL, "workspace_id": "w2"}]
+        self.assertEqual(feedbag.find_workspace(workspaces), "w2")
+
+    def test_returns_none_without_dock(self):
+        self.assertIsNone(feedbag.find_workspace([{"label": "other", "workspace_id": "w1"}]))
+
+    def test_renames_legacy_workspace_to_dock(self):
+        workspaces = [{"label": feedbag.LEGACY_WS_LABEL, "workspace_id": "w9"}]
+        with mock.patch.object(feedbag.herdr_api, "cli") as cli:
+            self.assertEqual(feedbag.find_workspace(workspaces), "w9")
+        cli.assert_called_once_with("workspace", "rename", "w9", feedbag.DOCK_LABEL, check=False)
+
+
+class RetryIntervalTest(unittest.TestCase):
+    def fetch_once(self, fetched):
+        host = FetchIsolationTest().make_host({"claude": providers.Usage("claude")}, {"claude": 0.0})
+        with mock.patch.object(feedbag.providers, "fetch", return_value=fetched):
+            host.fetch_due(now=100.0)
+        return host.next_fetch["claude"] - 100.0
+
+    def test_success_uses_normal_interval(self):
+        self.assertEqual(self.fetch_once(providers.Usage("claude")), feedbag.FETCH_SECONDS["claude"])
+
+    def test_error_without_numbers_retries_soon(self):
+        self.assertEqual(self.fetch_once(providers.Usage("claude", error="network")), feedbag.RETRY_SECONDS)
+
+    def test_rate_limit_backs_off(self):
+        interval = self.fetch_once(providers.Usage("claude", error="rate_limited", rate_limited=True))
+        self.assertEqual(interval, feedbag.FETCH_SECONDS["claude"] * feedbag.RATE_LIMIT_BACKOFF)
+
+
+class ClearRemovedTokenTest(unittest.TestCase):
+    def test_disabled_provider_token_is_cleared_at_once(self):
+        host = FetchIsolationTest().make_host({"claude": providers.Usage("claude")}, {"claude": 0.0})
+        host.pane_id = "p1"
+        with mock.patch.object(feedbag.providers, "enabled_providers", return_value=[]), \
+                mock.patch.object(feedbag.herdr_api, "cli") as cli:
+            host.sync_providers()
+        cli.assert_called_once_with(
+            "pane", "report-metadata", "p1", "--source", feedbag.SOURCE, "--clear-token", "fb_claude", check=False,
+        )
+        self.assertEqual(host.usages, {})
+
+
 class PickPaneTest(unittest.TestCase):
     def test_reuses_pane_with_only_own_expired_tokens(self):
         panes = [{"pane_id": "p1", "tokens": {"fb_claude": "x"}}]

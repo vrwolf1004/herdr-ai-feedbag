@@ -347,6 +347,10 @@ class Host:
         """config.json 의 providers 를 다시 읽는다. 이미 있던 서비스는 숫자와 조회 일정을 그대로 둔다."""
         self.config_changed()
         names = providers.enabled_providers(self.config_dir)
+        for name in set(self.usages) - set(names):
+            # 끈 서비스의 줄은 ttl 을 기다리지 않고 바로 지운다.
+            herdr_api.cli("pane", "report-metadata", self.pane_id, "--source", SOURCE, "--clear-token", f"fb_{name}",
+                          check=False)
         self.usages = {name: self.usages.get(name) or providers.Usage(name, error="loading") for name in names}
         self.next_fetch = {name: self.next_fetch.get(name, 0.0) for name in names}
 

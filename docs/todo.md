@@ -20,7 +20,7 @@
 - [x] **사이드바 줄 안내 액션**: `rows` 액션이 빠진 `$fb_*` 줄을 출력합니다. `config.toml`은 고치지 않습니다.
 - [x] **Gemini 토큰 만료 대응**: refresh token 으로 메모리에서만 새로 받습니다. client id/secret 은 Gemini CLI 설치본이나 환경 변수에서 읽습니다.
 - [x] **Copilot 계정 선택**: `config.json`의 `copilot_account`.
-- [ ] **서비스를 끈 직후 줄 정리**: 끈 서비스 토큰이 ttl(15초) 동안 남습니다. 바로 지우려면 토큰 clear 를 보냅니다.
+- [x] **서비스를 끈 직후 줄 정리**: 끈 서비스의 `fb_*` 토큰을 `pane report-metadata --clear-token`으로 바로 지웁니다. 명령 인자 순서(pane ID 먼저)는 실제 herdr 로 확인했습니다.
 - [ ] **Gemini client 탐색 확인**: 설치본에서 `OAUTH_CLIENT_ID`/`SECRET`을 찾는 경로를 실제 설치본으로 확인하지 못했습니다(개발 PC에 Gemini CLI 없음).
 - [ ] **Linux Copilot 계정 선택**: `secret-tool`의 `username` 속성 이름이 맞는지 확인하지 못했습니다.
 
@@ -34,12 +34,12 @@
   - 네트워크가 느리면 그동안 애니메이션과 heartbeat 가 멈춥니다. 최악이면 토큰 ttl(15초)이 지나 사이드바 줄이 잠깐 사라집니다.
   - 조회를 스레드로 돌리고 루프는 결과만 읽게 바꿉니다.
 - [x] **dock pane 재사용**: 자기(`fb_*`) 토큰만 남은 pane 은 빈 pane 으로 봅니다 (`foreign_tokens`).
-- [ ] **host 로직 테스트**: `pick_pane`, `fetch_due`(오류 격리)는 `tests/test_host.py`에 추가했습니다. `find_workspace`와 재시도 간격 테스트는 아직 없습니다.
+- [x] **host 로직 테스트**: `tests/test_host.py`에 `pick_pane`, `find_workspace`, 재시도 간격, 오류 격리, 끈 서비스 토큰 지우기 테스트를 넣었습니다.
 
 ## 공용 dock (herdr-dock)
 
 - [ ] **dock 규칙 정리**: dock 을 찾고 만들고 맨 아래로 옮기는 코드를 feedbag 과 stockpulse 가 각자 갖고 있습니다. 규칙 문서(`architecture.md`의 "herdr-dock 공용 규칙")를 기준으로 맞추고, 다른 플러그인이 참고할 짧은 예제를 둡니다.
-- [ ] **feedbag 이 없을 때 순서**: dock 을 맨 아래로 옮기는 일은 feedbag host 만 합니다. 다른 블록만 있을 때도 아래에 있게 하려면 각 플러그인이 같은 일을 해야 합니다.
+- [x] **feedbag 이 없을 때 순서**: radio, timekit, simple-git 도 `keep_at_bottom`을 호출합니다. stockpulse 는 아직 호출하지 않습니다 (확인 필요, 별도 작업).
 - [x] **블록이 줄었을 때 소개 칸**: 블록을 끄면(`cmd_stop`) 자기 pane을 닫은 뒤 빈 칸에 소개를 띄웁니다. simple-git 에서 실제로 확인했습니다.
 - [ ] **2x2 배치 공용화**: radio, feedbag, timekit, simple-git, stockpulse 가 같은 `grid_split` 과 `ensure_intro` 를 각자 갖고 있습니다. 한 규칙으로 맞추고 중복을 줄입니다. 칸 규칙은 1개는 전체, 2개는 좌우, 3개는 좌상·우상·좌하, 4개는 2x2 입니다.
 - [x] **소개 칸 문구 관리**: 기준 파일은 herdr-stockpulse `src/intro.py`이고, `tools/sync_dock_intro.py`로 복사하거나 `--check`로 같은지 확인합니다.
@@ -49,4 +49,4 @@
 - [x] **버전**: 현재 0.5.1 입니다. 다음 기능 릴리스 때 올립니다.
 - [ ] **README 미리보기**: 블록 예시에 Claude, Copilot 만 있습니다. Codex, Gemini 줄을 넣습니다.
 - [ ] **GitHub 저장소 설정**: 웹에서 topic `herdr-plugin`과 설명을 넣습니다 (gh CLI 미설치).
-- [ ] **줄바꿈 경고**: 커밋마다 `LF will be replaced by CRLF` 경고가 납니다. `.gitattributes`(`* text=auto eol=lf`)를 추가합니다.
+- [x] **줄바꿈 경고**: `.gitattributes`(`* text=auto eol=lf`)를 추가했습니다. 기존 CRLF 작업 파일은 다음 체크아웃부터 LF 로 바뀝니다.

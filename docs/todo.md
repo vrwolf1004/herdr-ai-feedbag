@@ -26,24 +26,27 @@
 
 ## 안정성
 
-- [ ] **제공자 오류 격리 및 상태 파일 원자적 기록**
+- [x] **제공자 오류 격리 및 상태 파일 원자적 기록** (`tests/test_host.py`로 검증)
   - `Host.fetch_due()`의 제공자 호출에서 예상하지 못한 응답 형식 오류가 host 루프까지 전파될 수 있다. 제공자별 실패를 기록하고 직전 값을 유지하는 테스트를 추가한다.
   - heartbeat 및 refresh 상태 파일은 바로 덮어쓰므로 중단 시 부분 JSON이 남을 수 있다. 임시 파일에 기록한 뒤 원자적으로 교체하고 복구 동작을 검증한다.
-- [ ] **조회를 별도 스레드로**
+- [x] **조회를 별도 스레드로** (`fetch_forever` 워커가 조회하고, 루프는 결과만 읽습니다)
   - 지금은 1초 루프 안에서 HTTP 조회를 바로 합니다. 타임아웃이 10초이고 Gemini는 요청을 두 번 보냅니다.
   - 네트워크가 느리면 그동안 애니메이션과 heartbeat 가 멈춥니다. 최악이면 토큰 ttl(15초)이 지나 사이드바 줄이 잠깐 사라집니다.
   - 조회를 스레드로 돌리고 루프는 결과만 읽게 바꿉니다.
-- [ ] **dock pane 재사용**: 이전 pane 에 ttl 이 남은 토큰이 있으면 빈 pane 으로 보지 않아서, 재사용하지 않고 새로 split 합니다. 토큰 source 가 자기 것이면 재사용하도록 `pick_pane`을 보완합니다.
-- [ ] **host 로직 테스트**: `pick_pane`, `find_workspace`, `fetch_due`(실패 시 이전 숫자 유지, 재시도 간격)에 테스트가 없습니다.
+- [x] **dock pane 재사용**: 자기(`fb_*`) 토큰만 남은 pane 은 빈 pane 으로 봅니다 (`foreign_tokens`).
+- [ ] **host 로직 테스트**: `pick_pane`, `fetch_due`(오류 격리)는 `tests/test_host.py`에 추가했습니다. `find_workspace`와 재시도 간격 테스트는 아직 없습니다.
 
 ## 공용 dock (herdr-dock)
 
 - [ ] **dock 규칙 정리**: dock 을 찾고 만들고 맨 아래로 옮기는 코드를 feedbag 과 stockpulse 가 각자 갖고 있습니다. 규칙 문서(`architecture.md`의 "herdr-dock 공용 규칙")를 기준으로 맞추고, 다른 플러그인이 참고할 짧은 예제를 둡니다.
 - [ ] **feedbag 이 없을 때 순서**: dock 을 맨 아래로 옮기는 일은 feedbag host 만 합니다. 다른 블록만 있을 때도 아래에 있게 하려면 각 플러그인이 같은 일을 해야 합니다.
+- [x] **블록이 줄었을 때 소개 칸**: 블록을 끄면(`cmd_stop`) 자기 pane을 닫은 뒤 빈 칸에 소개를 띄웁니다. simple-git 에서 실제로 확인했습니다.
+- [ ] **2x2 배치 공용화**: radio, feedbag, timekit, simple-git, stockpulse 가 같은 `grid_split` 과 `ensure_intro` 를 각자 갖고 있습니다. 한 규칙으로 맞추고 중복을 줄입니다. 칸 규칙은 1개는 전체, 2개는 좌우, 3개는 좌상·우상·좌하, 4개는 2x2 입니다.
+- [x] **소개 칸 문구 관리**: 기준 파일은 herdr-stockpulse `src/intro.py`이고, `tools/sync_dock_intro.py`로 복사하거나 `--check`로 같은지 확인합니다.
 
 ## 문서, 배포
 
-- [ ] **버전**: Codex, Gemini 추가 후에도 0.3.0 입니다. 0.4.0 으로 올립니다.
+- [x] **버전**: 현재 0.5.1 입니다. 다음 기능 릴리스 때 올립니다.
 - [ ] **README 미리보기**: 블록 예시에 Claude, Copilot 만 있습니다. Codex, Gemini 줄을 넣습니다.
 - [ ] **GitHub 저장소 설정**: 웹에서 topic `herdr-plugin`과 설명을 넣습니다 (gh CLI 미설치).
 - [ ] **줄바꿈 경고**: 커밋마다 `LF will be replaced by CRLF` 경고가 납니다. `.gitattributes`(`* text=auto eol=lf`)를 추가합니다.

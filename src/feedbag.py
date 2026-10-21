@@ -20,6 +20,7 @@ import argparse
 import dataclasses
 import os
 import sys
+import threading
 import time
 from datetime import datetime
 
@@ -90,8 +91,12 @@ class State:
             return None
 
     def write(self, name, value):
-        with open(self.path(name), "w", encoding="utf-8") as file:
+        # 임시 파일에 쓰고 바꿔 끼운다. 중간에 멈춰도 읽는 쪽은 예전 값이나 새 값 중 하나만 본다.
+        target = self.path(name)
+        temp = target + ".tmp"
+        with open(temp, "w", encoding="utf-8") as file:
             file.write(value)
+        os.replace(temp, target)
 
     def remove(self, name):
         try:
@@ -160,9 +165,14 @@ def pick_pane(panes, stored_pane, agent_panes, claimed=frozenset()):
     if stored_pane in ids and stored_pane not in claimed:
         return stored_pane
     free = [p["pane_id"] for p in panes
-            if not p.get("label") and not p.get("tokens") and p["pane_id"] not in agent_panes
+            if not p.get("label") and not foreign_tokens(p) and p["pane_id"] not in agent_panes
             and p["pane_id"] not in claimed]
     return free[0] if free else None
+
+
+def foreign_tokens(pane):
+    """이 플러그인(fb_*)이 아닌 토큰이 있는지. 예전 feedbag 토큰은 ttl 이 지나면 사라지므로 빈 pane 으로 본다."""
+    return any(not name.startswith("fb_") for name in (pane.get("tokens") or {}))
 
 
 def grid_split(anchor, cwd):
@@ -298,6 +308,7 @@ def cmd_stop(args):
         if others:
             if pane_id:
                 herdr_api.cli("pane", "close", pane_id, check=False)
+            ensure_intro(workspace_id, None, state.directory)  # 블록이 빠져 생긴 빈 칸에 소개를 띄운다
         else:
             herdr_api.cli("workspace", "close", workspace_id, check=False)
     for name in ("workspace.id", "pane.id", "heartbeat"):
@@ -348,7 +359,10 @@ class Host:
         for name in self.usages:
             if not forced and now < self.next_fetch[name]:
                 continue
-            fetched = providers.fetch(name, self.config_dir)
+            try:
+                fetched = providers.fetch(name, self.config_dir)
+            except Exception as error:  # noqa: BLE001 - 제공자 하나의 예외가 host 루프를 멈추지 않게 한다
+                fetched = providers.Usage(name, error=type(error).__name__)
             previous = self.usages[name]
             if fetched.error and previous.windows:
                 # 일시적인 실패면 마지막 숫자를 유지하고 실패 이유만 보여 준다.
@@ -419,15 +433,24 @@ class Host:
         sys.stdout.write("\033[H" + painted + "\033[J")
         sys.stdout.flush()
 
+    def fetch_forever(self):
+        """조회는 별도 스레드에서 한다. 느린 네트워크가 애니메이션과 heartbeat 를 멈추지 않게 한다."""
+        while self.state.read("stop") is None:
+            try:
+                self.fetch_due(time.time())
+            except Exception:  # noqa: BLE001 - 조회 스레드가 죽으면 사이드바 숫자가 멈춘다
+                pass
+            time.sleep(TICK_SECONDS)
+
     def run(self):
         sys.stdout.write("\033[?25l")  # 커서 숨김
         self.state.remove("starting")
+        threading.Thread(target=self.fetch_forever, daemon=True).start()
         tick = 0
         try:
             while self.state.read("stop") is None and self.socket_failures < MAX_SOCKET_FAILURES:
                 self.state.touch_heartbeat()
                 now = time.time()
-                self.fetch_due(now)
                 if tick % LAYOUT_EVERY_TICKS == 0:
                     self.register_agent()
                 self.hide_foreign_sidebars(now)

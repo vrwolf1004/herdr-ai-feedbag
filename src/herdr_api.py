@@ -29,7 +29,10 @@ def socket_path():
     if path:
         return path
     if IS_WINDOWS:
-        return os.path.join(os.environ.get("APPDATA", ""), "herdr", "herdr.sock")
+        appdata = os.environ.get("APPDATA")
+        if not appdata:
+            raise OSError("APPDATA is not set; set HERDR_SOCKET_PATH to the herdr socket")
+        return os.path.join(appdata, "herdr", "herdr.sock")
     return os.path.expanduser("~/.config/herdr/herdr.sock")
 
 
@@ -96,7 +99,12 @@ def _exchange_pipe(path, payload):
     if handle is None or handle == wintypes.HANDLE(-1).value:
         raise OSError(f"named pipe open failed ({ctypes.get_last_error()})")
     fd = msvcrt.open_osfhandle(handle, os.O_RDWR | os.O_BINARY)
-    with os.fdopen(fd, "r+b", buffering=0) as pipe:
+    try:
+        pipe = os.fdopen(fd, "r+b", buffering=0)
+    except OSError:
+        os.close(fd)  # fd 가 handle 을 가지고 있으므로 닫으면 handle 도 닫힌다
+        raise
+    with pipe:
         pipe.write(payload)
         return _read_line(pipe.read)
 

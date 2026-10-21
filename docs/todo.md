@@ -48,5 +48,5 @@
 
 - [x] **버전**: 현재 0.5.1 입니다. 다음 기능 릴리스 때 올립니다.
 - [ ] **README 미리보기**: 블록 예시에 Claude, Copilot 만 있습니다. Codex, Gemini 줄을 넣습니다.
-- [ ] **GitHub 저장소 설정**: 웹에서 topic `herdr-plugin`과 설명을 넣습니다 (gh CLI 미설치).
+- [x] **GitHub 저장소 설정**: topic `herdr-plugin`과 설명이 이미 있는 것을 GitHub API로 확인했습니다 (gh CLI 없이 확인).
 - [x] **줄바꿈 경고**: `.gitattributes`(`* text=auto eol=lf`)를 추가했습니다. 기존 CRLF 작업 파일은 다음 체크아웃부터 LF 로 바뀝니다.

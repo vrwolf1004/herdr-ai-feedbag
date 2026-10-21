@@ -2,58 +2,42 @@
 
 [**English**](README.md) | [한국어](README.ko.md)
 
-One feedbag for your herd: Claude Code, GitHub Copilot, OpenAI Codex, and Gemini CLI plan usage, shown **once** at the bottom of the herdr Agents sidebar instead of on every agent row.
+🌐 UI languages: 🇺🇸 English (en) · 🇰🇷 한국어 (ko) · 🇷🇺 Русский (ru) · 🇫🇷 Français (fr) · 🇪🇸 Español (es) · 🇩🇪 Deutsch (de) · 🇯🇵 日本語 (ja)
 
-- Windows, Linux, and macOS
-- Python 3.8+; standard library only
-- herdr 0.9.0+
-- Choose which services to show with the `services` action
-- 7 languages: English, Korean, Russian, French, Spanish, German, Japanese
+Show usage for Claude Code, GitHub Copilot, OpenAI Codex, and Gemini CLI once in a shared block at the bottom of herdr's Agents sidebar.
 
-Sidebar block (animated; `!` blinks at 80% or more):
+## Dashboard design
 
-```text
- ● claude   work · 1
- ● copilot  work · 1
- ○ feedbag
-   ! cld ███▒▓█►░ 81% wk 24%
-   ● cop ▒▓►░░░░░ 30% rst 11/01
-```
+The sidebar summarizes each service's usage; the `feedbag` pane shows detailed limits and reset times. Configure displayed services and sidebar rows in herdr's `config.toml`.
 
-Dashboard (the `feedbag` pane):
-
-```text
-╭──────────────────────────────────────────────╮
-│           🐺  herdr-ai-feedbag  🌕           │
-├──────────────────────────────────────────────┤
-│  Claude Code                                 │
-│    5h      ▓█████►░  81%  resets 10/15 13:59 │
-│    week    ▓█►░░░░░  24%  resets 10/19 01:59 │
-│                                              │
-│  GitHub Copilot                              │
-│    premium ▓█►░░░░░  30%  resets 11/01 09:00 │
-│    chat    unlimited                         │
-│    inline  unlimited                         │
-├──────────────────────────────────────────────┤
-│  updated 13:23:25   [Ctrl+C] stop            │
-╰──────────────────────────────────────────────╯
-```
-
-## Install
+## Installation
 
 ```sh
 herdr plugin install vrwolf1004/herdr-ai-feedbag
 ```
 
-Then add the usage rows to herdr's `config.toml` — see the [usage guide](docs/usage.md#2-sidebar-rows).
+## Actions
+
+| Action | What it does |
+| --- | --- |
+| `start` | Show the usage block |
+| `refresh` | Refresh usage now |
+| `stop` | Hide the usage block |
+| `services` | Choose which services to show |
+| `rows` | Check the required sidebar rows |
+
+On Windows, append `-windows` to each action ID. Full setup and invocation instructions are in the [usage guide](docs/usage.md).
+
+## Requirements
+
+- Windows, Linux, or macOS
+- herdr 0.9.0 or later
+- Python 3.8 or later; standard library only
 
 ## Documentation
 
-- [Installation, sidebar rows, actions, and credentials](docs/usage.md)
-
-Additional guides (Korean):
-
-- [사용법](docs/usage.ko.md)
+- [Usage and setup (English)](docs/usage.md)
+- [사용법 (한국어)](docs/usage.ko.md)
 - [Troubleshooting](docs/troubleshooting.md)
 - [Architecture](docs/architecture.md)
 - [Development and tests](docs/development.md)
@@ -68,8 +52,6 @@ python -m unittest discover -s tests
 ## License
 
 [MIT](LICENSE)
-
----
 
 ## Support the project
 

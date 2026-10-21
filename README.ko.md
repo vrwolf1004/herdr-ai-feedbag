@@ -1,43 +1,14 @@
 # herdr-ai-feedbag
 
-[English](README.md) | **한국어**
+[English](README.md) | [**한국어**](README.ko.md)
 
-Claude Code, GitHub Copilot, OpenAI Codex, Gemini CLI 사용량을 herdr Agents 사이드바 맨 아래에 **한 번만** 보여 주는 플러그인입니다. agent 행마다 같은 숫자가 반복되지 않습니다.
+🌐 UI 언어: 🇺🇸 English (en) · 🇰🇷 한국어 (ko) · 🇷🇺 Русский (ru) · 🇫🇷 Français (fr) · 🇪🇸 Español (es) · 🇩🇪 Deutsch (de) · 🇯🇵 日本語 (ja)
 
-- Windows, Linux, macOS 지원
-- Python 3.8 이상, 표준 라이브러리만 사용
-- herdr 0.9.0 이상
-- `services` 액션으로 보여 줄 서비스를 고를 수 있습니다
-- 7개 언어 지원: 영어, 한국어, 러시아어, 프랑스어, 스페인어, 독일어, 일본어
+Claude Code, GitHub Copilot, OpenAI Codex, Gemini CLI 사용량을 herdr Agents 사이드바 맨 아래 공용 블록에 한 번만 보여 줍니다.
 
-사이드바 블록 (애니메이션, 80% 이상이면 `!`가 깜빡임):
+## 대시보드 디자인
 
-```text
- ● claude   work · 1
- ● copilot  work · 1
- ○ feedbag
-   ! cld ███▒▓█►░ 81% wk 24%
-   ● cop ▒▓►░░░░░ 30% rst 11/01
-```
-
-대시보드 (`feedbag` pane):
-
-```text
-╭─────────────────────────────────────────────╮
-│          🐺  herdr-ai-feedbag  🌕           │
-├─────────────────────────────────────────────┤
-│  Claude Code                                │
-│    5시간    ▓█████►░  81%  10/15 13:59 리셋 │
-│    주간     ▓█►░░░░░  24%  10/19 01:59 리셋 │
-│                                             │
-│  GitHub Copilot                             │
-│    프리미엄 ▓█►░░░░░  30%  11/01 09:00 리셋 │
-│    채팅     무제한                          │
-│    자동완성 무제한                          │
-├─────────────────────────────────────────────┤
-│  13:23:25 갱신   [Ctrl+C] 중지              │
-╰─────────────────────────────────────────────╯
-```
+사이드바에서 서비스별 사용량을 간단히 확인하고, `feedbag` pane에서 한도와 초기화 시각을 자세히 볼 수 있습니다. 표시할 서비스와 사이드바 줄은 herdr `config.toml`에서 설정합니다.
 
 ## 설치
 
@@ -45,12 +16,28 @@ Claude Code, GitHub Copilot, OpenAI Codex, Gemini CLI 사용량을 herdr Agents 
 herdr plugin install vrwolf1004/herdr-ai-feedbag
 ```
 
-설치 후 herdr `config.toml`에 사용량 줄을 추가하세요. [사용법](docs/usage.ko.md#2-사이드바-줄-추가)을 참고하세요.
+## 액션
+
+| 액션 | 기능 |
+| --- | --- |
+| `start` | 사용량 블록 표시 |
+| `refresh` | 사용량 즉시 갱신 |
+| `stop` | 사용량 블록 숨기기 |
+| `services` | 표시할 서비스 선택 |
+| `rows` | 필요한 사이드바 줄 확인 |
+
+Windows에서는 각 액션 ID 뒤에 `-windows`를 붙입니다. 자세한 설정과 실행 방법은 [사용법](docs/usage.ko.md)을 참고하세요.
+
+## 요구 사항
+
+- Windows, Linux, macOS
+- herdr 0.9.0 이상
+- Python 3.8 이상, 표준 라이브러리만 사용
 
 ## 문서
 
-- [설치, 사이드바 설정, 액션, 로그인 정보](docs/usage.ko.md)
-- [Usage guide (English)](docs/usage.md)
+- [사용법 (한국어)](docs/usage.ko.md)
+- [Usage and setup (English)](docs/usage.md)
 - [문제 해결](docs/troubleshooting.md)
 - [구조 및 동작 방식](docs/architecture.md)
 - [개발과 테스트](docs/development.md)
@@ -65,8 +52,6 @@ python -m unittest discover -s tests
 ## 라이선스
 
 [MIT](LICENSE)
-
----
 
 ## 프로젝트 응원하기
 

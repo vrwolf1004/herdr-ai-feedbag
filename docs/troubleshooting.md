@@ -33,7 +33,7 @@
 
 ## feedbag pane을 실수로 닫았다 / Ctrl+C로 멈췄다
 
-herdr 명령 팔레트에서 "feedbag: show usage block"을 실행하거나, workspace를 하나 만들면 자동으로 다시 뜹니다. host가 멈추면 사이드바 숫자는 15초 뒤 사라집니다.
+herdr 명령 팔레트에서 "feedbag: show usage block"을 실행하거나, workspace를 하나 만들면 자동으로 다시 뜹니다. `start`는 heartbeat와 함께 pane의 실제 존재도 확인하므로, pane을 닫은 직후처럼 heartbeat가 아직 남아 있어도 다시 엽니다. host가 멈추면 사이드바 숫자는 15초 뒤 사라집니다.
 
 터미널에서는 액션 id를 먼저 쓰고 플러그인을 `--plugin`으로 지정합니다.
 

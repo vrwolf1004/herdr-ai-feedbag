@@ -17,16 +17,19 @@ startup / workspace.created hook ── ensure ──┐
 start / refresh / stop action ───────────────┤
                                              ▼
                           herdr-dock workspace 의 feedbag pane
-                          └─ host 루프 (1초마다)
-                               ├─ heartbeat 기록
-                               ├─ 주기가 된 서비스 조회 (Claude·Codex 5분, Copilot·Gemini 10분)
-                               ├─ 사이드바 토큰 갱신 (socket, ttl 15초)
-                               ├─ 상세 화면 다시 그리기
+                          └─ host
+                               ├─ 메인 루프 (1초마다): heartbeat, 사이드바 토큰, 상세 화면
+                               ├─ 조회 스레드: 주기가 된 서비스 조회
+                               │    (Claude·Codex 5분, Copilot·Gemini 10분)
                                ├─ 5초마다: agent 재등록, 맨 아래 위치 확인
                                └─ herdr-sidebar 사이드바가 끼어들면 숨기기 키 전송
 ```
 
 - host는 feedbag pane 안에서 돕니다. 따로 떨어진 백그라운드 프로세스가 없어서 pane을 닫으면 같이 끝납니다.
+- `ensure`는 heartbeat가 살아 있어도 기록된 pane이 실제 herdr에 있는지 확인합니다. pane이 닫혀 있으면 기존 heartbeat만 믿고 끝내지 않고 dock pane과 host를 다시 확보합니다.
+- dock에 agent 블록이 세 개 있고 사용할 빈 pane이 없으면 네 번째 칸에 `herdr-dock-intro` 소개 pane을 띄웁니다. 이미 소개 pane이 있으면 재사용하고, 블록 수가 줄어 빈 칸이 생기면 소개 pane을 만들지 않습니다. 블록이 새로 그 칸을 쓰면 소개 pane의 label을 지우고 그 pane을 재사용합니다.
+- 서비스 사용을 끄면 host가 `pane report-metadata --clear-token`으로 해당 `$fb_*` 토큰을 바로 제거합니다. 토큰 TTL이 만료될 때까지 기다리지 않습니다.
+- 서비스 조회는 daemon 스레드에서 실행됩니다. 메인 루프는 조회가 느려도 heartbeat, 토큰 갱신, 화면 애니메이션을 계속 처리합니다.
 - hook은 heartbeat가 10초 안에 갱신됐으면 아무것도 하지 않습니다. 시작 직후 hook이 겹쳐 두 번 실행되지 않도록 `starting` 표시를 둡니다.
 - host가 죽으면 토큰 ttl(15초)이 지나 사이드바 숫자가 사라집니다.
 
@@ -69,6 +72,8 @@ start / refresh / stop action ───────────────┤
 ## 상태 파일
 
 `HERDR_PLUGIN_STATE_DIR` 아래에 둡니다.
+
+`State.write()`는 값을 옆의 `.tmp` 파일에 완전히 쓴 다음 `os.replace()`로 대상 파일과 교체합니다. 교체가 실패하면 기존 파일이 보존됩니다. 이 원자적 쓰기는 플러그인의 상태 파일에 적용되며 서비스 설정 파일 쓰기와는 별개입니다.
 
 | 파일 | 내용 |
 | --- | --- |

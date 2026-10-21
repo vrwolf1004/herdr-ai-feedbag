@@ -50,3 +50,9 @@
 - [ ] **README 미리보기**: 블록 예시에 Claude, Copilot 만 있습니다. Codex, Gemini 줄을 넣습니다.
 - [x] **GitHub 저장소 설정**: topic `herdr-plugin`과 설명이 이미 있는 것을 GitHub API로 확인했습니다 (gh CLI 없이 확인).
 - [x] **줄바꿈 경고**: `.gitattributes`(`* text=auto eol=lf`)를 추가했습니다. 기존 CRLF 작업 파일은 다음 체크아웃부터 LF 로 바뀝니다.
+
+## 실행 확인에서 찾은 개선점 (2026-10-21)
+
+- [x] **ensure 가 heartbeat 만 보고 일찍 끝남** (pane 존재 확인 추가. `PaneAliveTest`) (`cmd_ensure`): radio 와 같은 문제다. pane 존재 확인을 추가한다.
+- [ ] **starting 표식이 남으면 시작이 막힘**: 프로세스가 죽은 뒤 표식이 남으면 수동으로 지워야 했다. 표식에 pid 를 같이 적거나 host 가 살아 있는지 함께 본다.
+- [ ] **끈 뒤 소개 칸 생성 확인 필요**: `cmd_stop` 에 소개 칸 확인을 넣었지만 feedbag 에서는 실행으로 확인하지 않았다 (simple-git 에서만 확인).

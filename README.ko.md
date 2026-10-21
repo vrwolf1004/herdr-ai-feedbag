@@ -47,6 +47,8 @@ Agents 사이드바:
 ╰─────────────────────────────────────────────╯
 ```
 
+공용 dock에 블록이 세 개 있고 빈 칸이 없으면 네 번째 칸에 소개 pane이 생기며, 다른 블록이 그 칸을 쓰면 자리를 내줍니다.
+
 ## 설치
 
 ```sh
@@ -64,6 +66,7 @@ herdr plugin install vrwolf1004/herdr-ai-feedbag
 | `rows` | 필요한 사이드바 줄 확인 |
 
 Windows에서는 각 액션 ID 뒤에 `-windows`를 붙입니다. 자세한 설정과 실행 방법은 [사용법](docs/usage.ko.md)을 참고하세요.
+`start`는 host heartbeat뿐 아니라 feedbag pane의 실제 존재 여부도 확인하므로 pane을 닫았으면 블록을 다시 만듭니다.
 
 ## 요구 사항
 

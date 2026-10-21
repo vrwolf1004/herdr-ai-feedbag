@@ -47,6 +47,8 @@ Dashboard (`feedbag` pane):
 ╰──────────────────────────────────────────────╯
 ```
 
+When the shared dock is full with three blocks, a compact intro pane fills the fourth slot; it yields that slot when another block needs it.
+
 ## Installation
 
 ```sh
@@ -64,6 +66,7 @@ herdr plugin install vrwolf1004/herdr-ai-feedbag
 | `rows` | Check the required sidebar rows |
 
 On Windows, append `-windows` to each action ID. Full setup and invocation instructions are in the [usage guide](docs/usage.md).
+`start` checks that the feedbag pane still exists as well as the host heartbeat, and recreates the block if the pane was closed.
 
 ## Requirements
 

@@ -66,6 +66,21 @@ class FetchIsolationTest(unittest.TestCase):
         self.assertEqual(host.usages["claude"].error, "RuntimeError")
 
 
+class PaneAliveTest(unittest.TestCase):
+    def test_missing_pane_is_not_alive(self):
+        from unittest import mock
+        with mock.patch.object(feedbag.herdr_api, "cli", return_value=None):
+            self.assertFalse(feedbag.pane_alive("wN:p1"))
+
+    def test_existing_pane_is_alive(self):
+        from unittest import mock
+        with mock.patch.object(feedbag.herdr_api, "cli", return_value={"pane": {"pane_id": "wN:p1"}}):
+            self.assertTrue(feedbag.pane_alive("wN:p1"))
+
+    def test_no_pane_id_is_not_alive(self):
+        self.assertFalse(feedbag.pane_alive(None))
+
+
 class FindWorkspaceTest(unittest.TestCase):
     def test_returns_dock_workspace(self):
         workspaces = [{"label": "other", "workspace_id": "w1"}, {"label": feedbag.DOCK_LABEL, "workspace_id": "w2"}]

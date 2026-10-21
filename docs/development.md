@@ -21,7 +21,7 @@ herdr-ai-feedbag/
 │   └── locales/<언어>.json      화면 문구 (en, ko, ru, fr, es, de, ja)
 └── tests/                       unittest 테스트
     ├── support.py               테스트 공용 도구
-    ├── test_host.py             host 동작, 조회 주기, pane 선택
+    ├── test_host.py             host 동작, atomic 상태 쓰기, pane 확인/선택, 조회 주기, 토큰 정리
     ├── test_i18n.py             언어 파일의 키와 자리표시자 검사
     ├── test_providers.py        사용량 응답 파싱
     ├── test_render.py           사이드바 줄 폭과 애니메이션
@@ -37,6 +37,7 @@ python -m unittest discover -s tests
 ```
 
 테스트는 표준 라이브러리 `unittest`만 씁니다. 사용량 응답은 실제 서버 대신 가짜 데이터로 파싱을 확인합니다. 실제 Codex와 Gemini 응답은 아직 확인하지 못했습니다([할 일](todo.md) 참고).
+`test_host.py`는 원자적 상태 파일 교체와 교체 실패 시 기존 값 보존, 닫힌 pane 감지, 서비스 비활성화 시 토큰 즉시 삭제도 확인합니다. 실제 herdr UI에서 소개 pane과 블록 배치는 별도로 확인해야 합니다.
 
 ## 문구를 추가하거나 바꿀 때
 

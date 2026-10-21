@@ -58,6 +58,7 @@ herdr 서버가 시작될 때와 workspace가 만들어질 때 자동으로 시�
 | `rows` | herdr `config.toml`에 빠진 `$fb_*` 사이드바 줄을 출력 (`herdr plugin log list --plugin herdr-ai-feedbag`로 확인). 파일은 고치지 않음 |
 
 Windows에서는 액션 id 뒤에 `-windows`가 붙습니다.
+`start`는 heartbeat가 최근인지뿐 아니라 저장된 pane이 herdr에 실제로 있는지도 확인합니다. pane을 닫아 heartbeat가 아직 남아 있어도 블록을 다시 만듭니다.
 
 ```sh
 herdr plugin action invoke start-windows --plugin herdr-ai-feedbag   # windows
@@ -101,7 +102,7 @@ herdr 명령 팔레트에서 **feedbag: choose services**를 실행합니다(또
  ↑↓ 이동 · Space 켜기/끄기 · Enter 저장 · q 취소
 ```
 
-- Enter를 누르면 `config.json`에 저장되고 1초 안에 블록에 반영됩니다. 다시 시작할 필요가 없습니다. 서비스는 하나 이상 켜 두어야 합니다.
+- Enter를 누르면 `config.json`에 저장되고 1초 안에 블록에 반영됩니다. 다시 시작할 필요가 없습니다. 서비스는 하나 이상 켜 두어야 합니다. 서비스를 끄면 토큰 TTL을 기다리지 않고 해당 `$fb_<이름>` 사이드바 토큰을 바로 지웁니다.
 - 고른 서비스의 `$fb_<이름>` 줄이 herdr `config.toml`에 없으면 넣을 줄을 보여 줍니다. `config.toml`은 다른 설정이 섞인 파일이라 직접 고치지 않습니다. [2장](#2-사이드바-줄-추가)의 네 줄을 한 번 모두 넣어 두면 꺼진 서비스 줄은 비어서 보이지 않으니 편합니다.
 
 ### 직접 설정

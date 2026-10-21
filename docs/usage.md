@@ -57,7 +57,7 @@ The block starts automatically when the herdr server starts and when a workspace
 | `services` | Open the service picker ([section 5](#5-choosing-services)) |
 | `rows` | Print the `$fb_*` sidebar rows missing from herdr's `config.toml` (see `herdr plugin log list --plugin herdr-ai-feedbag`). The file is never edited |
 
-On Windows the action ids end with `-windows`:
+On Windows the action ids end with `-windows`. `start` checks that the saved pane still exists in herdr, not just that its heartbeat is recent. If the pane was closed, it recreates the block even while a stale heartbeat remains:
 
 ```sh
 herdr plugin action invoke start-windows --plugin herdr-ai-feedbag   # windows
@@ -111,7 +111,7 @@ Run **feedbag: choose services** from the herdr command palette (or `herdr plugi
  ↑↓ move · Space on/off · Enter save · q cancel
 ```
 
-- Enter saves to `config.json` and the block updates within a second; no restart needed. At least one service must stay on.
+- Enter saves to `config.json` and the block updates within a second; no restart needed. At least one service must stay on. Disabling a service immediately clears its `$fb_<name>` sidebar token rather than waiting for the token TTL.
 - If a chosen service has no `$fb_<name>` row in herdr's `config.toml`, the picker lists the rows to add. It does not edit `config.toml` (it holds your other settings). Tip: add all four rows from [section 2](#2-sidebar-rows) once; rows for services that are off stay empty and invisible.
 
 ### By hand

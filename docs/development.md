@@ -21,6 +21,7 @@ herdr-ai-feedbag/
 │   └── locales/<언어>.json      화면 문구 (en, ko, ru, fr, es, de, ja)
 └── tests/                       unittest 테스트
     ├── support.py               테스트 공용 도구
+    ├── test_host.py             host 동작, 조회 주기, pane 선택
     ├── test_i18n.py             언어 파일의 키와 자리표시자 검사
     ├── test_providers.py        사용량 응답 파싱
     ├── test_render.py           사이드바 줄 폭과 애니메이션

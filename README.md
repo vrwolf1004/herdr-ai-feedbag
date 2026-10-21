@@ -16,6 +16,8 @@ Agents sidebar:
  ○ feedbag
    ! cld ███▒▓█►░ 81% wk 24%
    ● cop ▒▓►░░░░░ 30% rst 11/01
+    ● cdx ██►░░░░░ 25% wk 33%
+    ● gem ███►░░░░ 37% fl 12%
 ```
 
 Dashboard (`feedbag` pane):
@@ -32,6 +34,14 @@ Dashboard (`feedbag` pane):
 │    premium ▓█►░░░░░  30%  resets 11/01 09:00 │
 │    chat    unlimited                         │
 │    inline  unlimited                         │
+│                                              │
+│  OpenAI Codex                                │
+│    5h      ██►░░░░░  25%  resets 10/16 13:59 │
+│    week    ▓▓►░░░░░  33%  resets 10/19 01:59 │
+│                                              │
+│  Gemini CLI                                  │
+│    Pro     ███►░░░░  37%  resets 10/22 09:00 │
+│    Flash   ▓►░░░░░░  12%  resets 10/22 09:00 │
 ├──────────────────────────────────────────────┤
 │  updated 13:23:25   [Ctrl+C] stop            │
 ╰──────────────────────────────────────────────╯

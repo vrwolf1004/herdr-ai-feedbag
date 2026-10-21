@@ -8,7 +8,34 @@ Show usage for Claude Code, GitHub Copilot, OpenAI Codex, and Gemini CLI once in
 
 ## Dashboard design
 
-The sidebar summarizes each service's usage; the `feedbag` pane shows detailed limits and reset times. Configure displayed services and sidebar rows in herdr's `config.toml`.
+Agents sidebar:
+
+```text
+ ● claude   work · 1
+ ● copilot  work · 1
+ ○ feedbag
+   ! cld ███▒▓█►░ 81% wk 24%
+   ● cop ▒▓►░░░░░ 30% rst 11/01
+```
+
+Dashboard (`feedbag` pane):
+
+```text
+╭──────────────────────────────────────────────╮
+│           🐺  herdr-ai-feedbag  🌕           │
+├──────────────────────────────────────────────┤
+│  Claude Code                                 │
+│    5h      ▓█████►░  81%  resets 10/15 13:59 │
+│    week    ▓█►░░░░░  24%  resets 10/19 01:59 │
+│                                              │
+│  GitHub Copilot                              │
+│    premium ▓█►░░░░░  30%  resets 11/01 09:00 │
+│    chat    unlimited                         │
+│    inline  unlimited                         │
+├──────────────────────────────────────────────┤
+│  updated 13:23:25   [Ctrl+C] stop            │
+╰──────────────────────────────────────────────╯
+```
 
 ## Installation
 

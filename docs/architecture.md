@@ -42,16 +42,17 @@ start / refresh / stop action ───────────────┤
 
 ## herdr-dock 공용 규칙
 
-다른 플러그인도 하단 고정 블록을 두려면 같은 규칙을 따르면 됩니다.
+자리 배정과 정리는 `herdr-dock-grid` 공용 모듈(`dock_layout.py`)이 합니다. 이 플러그인은 `ensure_dock_pane("herdr-ai-feedbag", cwd)`로 자기 pane을 받고, 끝낼 때 `release_dock_pane`을 부릅니다. 다른 플러그인도 같은 방식을 따르면 됩니다.
 
-1. label이 `herdr-dock`인 workspace를 찾습니다. 없으면 `workspace create --label herdr-dock --no-focus`로 만듭니다.
-2. 그 안에서 label·token·agent가 없는 빈 pane이 있으면 쓰고, 없으면 dock 안에서 자리를 골라 `pane split`으로 나눠 자기 pane을 만듭니다. 자리는 왼쪽 위, 오른쪽 위, 왼쪽 아래, 오른쪽 아래 순서이고, 이미 있는 pane 옆이나 아래에 나눕니다(`grid_split`). 다른 블록의 pane이나 herdr-sidebar pane은 건드리지 않습니다.
-3. 그 pane을 가짜 agent로 등록하고 토큰을 붙입니다. dock을 맨 뒤로 옮기는 일은 누가 해도 결과가 같습니다.
-4. 끝낼 때는 자기 pane만 닫고, dock에 herdr-sidebar 말고 남은 pane이 없을 때만 workspace를 닫습니다.
+> `herdr-dock-grid` 연결은 선택입니다. 설치되어 있지 않아도 이 플러그인의 `src/dock_layout.py` 복사본으로 똑같이 동작합니다(기능은 복사본 기준, 여러 워크스페이스·관리 기능은 설치본에서만).
 
-0.1.0이 쓰던 `feedbag` workspace가 남아 있으면 이름을 `herdr-dock`으로 바꿔 이어 씁니다.
+1. 설치된 `herdr-dock-grid`가 있으면 그 원본을, 없으면 이 플러그인의 `src/dock_layout.py` 복사본을 씁니다(`load_dock_layout`).
+2. 자기 키(`herdr-ai-feedbag`)의 표시 파일(`<key>.dock`)이 정본입니다. 레지스트리(`herdr-dock-grid.json`)는 그 위의 색인입니다.
+3. 워크스페이스 `herdr-dock`에서 빈 자리를 찾고, 없으면 2x2 격자로 나눕니다. 4개를 넘으면 `herdr-dock2`, `herdr-dock3` ... 순서로 넘어갑니다.
+4. 다른 플러그인이 찜한 pane이나 herdr-sidebar pane은 건드리지 않습니다.
+5. 끝낼 때는 자기 pane만 닫고 `release_dock_pane`으로 자리를 놓습니다. 강제로 닫힌 경우는 다음 배정 때 레지스트리와 표시 파일이 정리됩니다.
 
-도크에 블록이 세 개 있고 다른 빈 칸이 없으면, 네 번째 칸에 관련 herdr 플러그인을 소개하는 작은 pane을 띄웁니다. 다른 블록이 그 칸을 써야 하면 소개 pane을 빈 칸으로 보고 이름을 지우며, 블록이 제거되어 다시 세 개만 남으면 소개 pane을 복구할 수 있습니다.
+0.5.6에서 옛 `feedbag` 워크스페이스 이름을 `herdr-dock`으로 바꾸던 동작(legacy rename)을 지웠습니다.
 
 ## 새 서비스 추가
 

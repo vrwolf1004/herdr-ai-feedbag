@@ -81,21 +81,6 @@ class PaneAliveTest(unittest.TestCase):
         self.assertFalse(feedbag.pane_alive(None))
 
 
-class FindWorkspaceTest(unittest.TestCase):
-    def test_returns_dock_workspace(self):
-        workspaces = [{"label": "other", "workspace_id": "w1"}, {"label": feedbag.DOCK_LABEL, "workspace_id": "w2"}]
-        self.assertEqual(feedbag.find_workspace(workspaces), "w2")
-
-    def test_returns_none_without_dock(self):
-        self.assertIsNone(feedbag.find_workspace([{"label": "other", "workspace_id": "w1"}]))
-
-    def test_renames_legacy_workspace_to_dock(self):
-        workspaces = [{"label": feedbag.LEGACY_WS_LABEL, "workspace_id": "w9"}]
-        with mock.patch.object(feedbag.herdr_api, "cli") as cli:
-            self.assertEqual(feedbag.find_workspace(workspaces), "w9")
-        cli.assert_called_once_with("workspace", "rename", "w9", feedbag.DOCK_LABEL, check=False)
-
-
 class RetryIntervalTest(unittest.TestCase):
     def fetch_once(self, fetched):
         host = FetchIsolationTest().make_host({"claude": providers.Usage("claude")}, {"claude": 0.0})
@@ -127,27 +112,3 @@ class ClearRemovedTokenTest(unittest.TestCase):
         self.assertEqual(host.usages, {})
 
 
-class PickPaneTest(unittest.TestCase):
-    def test_reuses_pane_with_only_own_expired_tokens(self):
-        panes = [{"pane_id": "p1", "tokens": {"fb_claude": "x"}}]
-        self.assertEqual(feedbag.pick_pane(panes, None, set()), "p1")
-
-    def test_skips_pane_with_another_plugin_token(self):
-        panes = [{"pane_id": "p1", "tokens": {"rd_now": "x"}}, {"pane_id": "p2"}]
-        self.assertEqual(feedbag.pick_pane(panes, None, set()), "p2")
-
-    def test_skips_labeled_and_agent_panes_and_claimed(self):
-        panes = [
-            {"pane_id": "p1", "label": "Sidebar"},
-            {"pane_id": "p2"},
-            {"pane_id": "p3"},
-        ]
-        self.assertEqual(feedbag.pick_pane(panes, None, {"p2"}, claimed={"p3"}), None)
-
-    def test_stored_pane_wins_when_alive_and_unclaimed(self):
-        panes = [{"pane_id": "p1"}, {"pane_id": "p2"}]
-        self.assertEqual(feedbag.pick_pane(panes, "p2", set()), "p2")
-
-
-if __name__ == "__main__":
-    unittest.main()

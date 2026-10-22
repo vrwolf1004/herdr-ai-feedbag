@@ -34,11 +34,11 @@
   - 네트워크가 느리면 그동안 애니메이션과 heartbeat 가 멈춥니다. 최악이면 토큰 ttl(15초)이 지나 사이드바 줄이 잠깐 사라집니다.
   - 조회를 스레드로 돌리고 루프는 결과만 읽게 바꿉니다.
 - [x] **dock pane 재사용**: 자기(`fb_*`) 토큰만 남은 pane 은 빈 pane 으로 봅니다 (`foreign_tokens`).
-- [x] **host 로직 테스트**: `tests/test_host.py`에 `pick_pane`, `find_workspace`, 재시도 간격, 오류 격리, 끈 서비스 토큰 지우기 테스트를 넣었습니다.
+- [x] **host 로직 테스트**: `tests/test_host.py`에 재시도 간격, 오류 격리, 끈 서비스 토큰 지우기 테스트를 넣었습니다. `pick_pane`, `find_workspace` 는 공용 모듈로 대체하고 지웠습니다(0.5.6).
 
 ## 공용 dock (herdr-dock)
 
-- [ ] **dock 규칙 정리**: dock 을 찾고 만들고 맨 아래로 옮기는 코드를 feedbag 과 stockpulse 가 각자 갖고 있습니다. 규칙 문서(`architecture.md`의 "herdr-dock 공용 규칙")를 기준으로 맞추고, 다른 플러그인이 참고할 짧은 예제를 둡니다.
+- [x] **dock 규칙 정리**: 자리 배정과 정리는 `herdr-dock-grid` 공용 모듈이 맡습니다(`architecture.md`의 "herdr-dock 공용 규칙"). 다른 플러그인이 참고할 짧은 예제는 그 문서에 있습니다.
 - [x] **feedbag 이 없을 때 순서**: radio, timekit, simple-git 도 `keep_at_bottom`을 호출합니다. stockpulse 는 아직 호출하지 않습니다 (확인 필요, 별도 작업).
 - [x] **블록이 줄었을 때 소개 칸**: 블록을 끄면(`cmd_stop`) 자기 pane을 닫은 뒤 빈 칸에 소개를 띄웁니다. simple-git 에서 실제로 확인했습니다.
 - [ ] **2x2 배치 공용화**: radio, feedbag, timekit, simple-git, stockpulse 가 같은 `grid_split` 과 `ensure_intro` 를 각자 갖고 있습니다. 한 규칙으로 맞추고 중복을 줄입니다. 칸 규칙은 1개는 전체, 2개는 좌우, 3개는 좌상·우상·좌하, 4개는 2x2 입니다.

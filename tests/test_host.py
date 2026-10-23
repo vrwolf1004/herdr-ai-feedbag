@@ -94,6 +94,16 @@ class RetryIntervalTest(unittest.TestCase):
     def test_error_without_numbers_retries_soon(self):
         self.assertEqual(self.fetch_once(providers.Usage("claude", error="network")), feedbag.RETRY_SECONDS)
 
+    def test_login_required_uses_normal_interval(self):
+        for error in ("not_logged_in", "login_expired"):
+            with self.subTest(error=error):
+                self.assertEqual(self.fetch_once(providers.Usage("claude", error=error)), feedbag.FETCH_SECONDS["claude"])
+
+    def test_transient_errors_still_retry_soon(self):
+        for error in ("network", "http", "KeyError"):
+            with self.subTest(error=error):
+                self.assertEqual(self.fetch_once(providers.Usage("claude", error=error)), feedbag.RETRY_SECONDS)
+
     def test_rate_limit_backs_off(self):
         interval = self.fetch_once(providers.Usage("claude", error="rate_limited", rate_limited=True))
         self.assertEqual(interval, feedbag.FETCH_SECONDS["claude"] * feedbag.RATE_LIMIT_BACKOFF)

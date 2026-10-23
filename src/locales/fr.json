@@ -15,6 +15,7 @@
   "error.login_expired": "connexion expirée",
   "error.rate_limited": "limite de requêtes",
   "error.network": "erreur réseau : {detail}",
+  "error.unexpected": "erreur inattendue",
   "error.http": "HTTP {detail}",
   "error.no_quota_data": "aucune donnée de quota",
   "services.title": "choisir les services",

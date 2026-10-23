@@ -81,7 +81,7 @@ feedbag pane을 Ctrl+C로 닫았으면 herdr 명령 팔레트에서 "feedbag: sh
 - 이모지 없이 클래식 박스 문자(`█▓▒░►`)만 씁니다.
 - `feedbag` pane에는 Copilot chat, inline을 포함한 모든 창과 리셋 시각이 보입니다.
 
-조회 주기: Claude·Codex 5분, Copilot·Gemini 10분. 아직 숫자가 없을 때 실패하면 30초 뒤 다시 시도합니다. rate limit에 걸리면 주기의 3배로 늦춥니다.
+조회 주기: Claude·Codex 5분, Copilot·Gemini 10분. 아직 숫자가 없을 때 일시적인 실패(네트워크, HTTP, 예상하지 못한 오류)는 30초 뒤 다시 시도합니다. 로그인이 없거나 만료된 경우(`not logged in`, `login expired`)는 30초마다 다시 보지 않고 일반 주기에 맞춰 봅니다. 로그인한 뒤 `refresh` 액션을 실행하면 바로 확인합니다. rate limit에 걸리면 주기의 3배로 늦춥니다.
 
 ## 5. 서비스 선택
 

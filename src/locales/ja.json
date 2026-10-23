@@ -15,6 +15,7 @@
   "error.login_expired": "ログイン期限切れ",
   "error.rate_limited": "レート制限中",
   "error.network": "ネットワークエラー: {detail}",
+  "error.unexpected": "予期しないエラー",
   "error.http": "HTTP {detail}",
   "error.no_quota_data": "使用量データなし",
   "services.title": "サービス選択",

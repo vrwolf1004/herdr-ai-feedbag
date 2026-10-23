@@ -15,6 +15,7 @@
   "error.login_expired": "로그인 만료",
   "error.rate_limited": "요청 한도 초과",
   "error.network": "네트워크 오류: {detail}",
+  "error.unexpected": "예상하지 못한 오류",
   "error.http": "HTTP {detail}",
   "error.no_quota_data": "사용량 정보 없음",
   "services.title": "서비스 선택",

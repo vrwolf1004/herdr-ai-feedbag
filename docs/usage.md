@@ -90,7 +90,7 @@ description = "refresh AI usage"
 - Only classic box-drawing characters (`█▓▒░►`) are used, no emoji.
 - The `feedbag` pane shows every window with its reset time, including Copilot chat and inline completions.
 
-Refresh intervals: Claude and Codex every 5 minutes, Copilot and Gemini every 10 minutes. When there are no numbers yet, a failed fetch is retried after 30 seconds. Rate limits back off to 3× the interval.
+Refresh intervals: Claude and Codex every 5 minutes, Copilot and Gemini every 10 minutes. When there are no numbers yet, a temporary failure (network, HTTP, or an unexpected error) is retried after 30 seconds. A missing or expired login (`not logged in`, `login expired`) is not retried every 30 seconds; it is checked again at the normal interval, so log in and run `refresh` to see it sooner. Rate limits back off to 3× the interval.
 
 ## 5. Choosing services
 

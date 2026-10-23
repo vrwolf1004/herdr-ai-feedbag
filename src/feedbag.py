@@ -61,6 +61,8 @@ LAYOUT_EVERY_TICKS = 5        # 맨 아래 위치 확인, agent 재등록 주기
 FETCH_SECONDS = {"claude": 300, "copilot": 600, "codex": 300, "gemini": 600}
 RATE_LIMIT_BACKOFF = 3
 RETRY_SECONDS = 30
+# 로그인을 다시 해야 풀리는 실패. 30초마다 다시 봐도 같은 결과라 평소 주기로만 다시 본다.
+LOGIN_REQUIRED_ERRORS = ("not_logged_in", "login_expired")
 # herdr-sidebar 는 포커스된 탭마다 사이드바를 자동으로 띄운다. feedbag 탭에 뜨면 잠시 뒤 그 사이드바의
 # 숨기기 키(b)를 보낸다. 사용자가 직접 숨긴 것과 같아서 herdr-sidebar 가 이 탭을 기억하고 다시 열지 않는다.
 SIDEBAR_TOKEN_PREFIX = "herdr-sidebar"
@@ -307,8 +309,8 @@ class Host:
             self.usages[name] = fetched
             if fetched.rate_limited:
                 interval = FETCH_SECONDS[name] * RATE_LIMIT_BACKOFF
-            elif fetched.error and not fetched.windows:
-                interval = RETRY_SECONDS  # 보여 줄 숫자가 아직 없으면 빨리 다시 시도한다
+            elif fetched.error and not fetched.windows and fetched.error not in LOGIN_REQUIRED_ERRORS:
+                interval = RETRY_SECONDS  # 보여 줄 숫자가 아직 없고 일시적인 실패면 빨리 다시 시도한다
             else:
                 interval = FETCH_SECONDS[name]
             self.next_fetch[name] = now + interval

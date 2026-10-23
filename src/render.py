@@ -65,7 +65,11 @@ def is_warning(usage):
 
 
 def error_text(usage):
-    return t(f"error.{usage.error}", detail=usage.detail)
+    key = f"error.{usage.error}"
+    text = t(key, detail=usage.detail)
+    if text == key:  # 번역 키가 없는 오류 (예상하지 못한 예외 이름): 키 이름 대신 일반 문구를 보인다
+        return t("error.unexpected")
+    return text
 
 
 def sidebar_token(usage, frame):

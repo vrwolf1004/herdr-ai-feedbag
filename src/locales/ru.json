@@ -15,6 +15,7 @@
   "error.login_expired": "вход истёк",
   "error.rate_limited": "лимит запросов",
   "error.network": "ошибка сети: {detail}",
+  "error.unexpected": "неожиданная ошибка",
   "error.http": "HTTP {detail}",
   "error.no_quota_data": "нет данных о квоте",
   "services.title": "выбор сервисов",

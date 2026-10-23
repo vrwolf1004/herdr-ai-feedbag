@@ -186,7 +186,7 @@ def copilot_tokens(config_dir):
             return [value]
     if config_dir:
         try:
-            with open(os.path.join(config_dir, "copilot-token"), encoding="utf-8") as file:
+            with open(os.path.join(config_dir, "copilot-token"), encoding="utf-8-sig") as file:
                 value = file.read().strip()
             if value:
                 return [value]

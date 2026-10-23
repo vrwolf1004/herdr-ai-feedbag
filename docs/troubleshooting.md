@@ -23,6 +23,12 @@
 - Gemini: 토큰이 만료되면 refresh token으로 메모리에서 새로 받습니다. 그래도 `login expired`면 Gemini CLI 설치본에서 OAuth client를 찾지 못한 것이니 `gemini`를 한 번 실행하거나 `FEEDBAG_GEMINI_CLIENT_ID`, `FEEDBAG_GEMINI_CLIENT_SECRET`를 설정하세요.
 - Copilot: Copilot CLI에서 `/login` 하거나, `FEEDBAG_COPILOT_TOKEN` 환경 변수나 config 폴더의 `copilot-token` 파일에 토큰을 넣으세요.
 
+  **Windows에서 `copilot-token` 파일을 저장할 때 주의**: PowerShell 5.1의 `Out-File -Encoding utf8`은 파일 앞에 BOM(`﻿`)을 붙여 `network: 'latin-1' codec can't encode character '﻿'` 오류가 납니다. 다음 방법으로 BOM 없이 저장하세요.
+
+  ```powershell
+  [System.IO.File]::WriteAllText("$env:APPDATA\herdr\plugins\config\herdr-ai-feedbag\copilot-token", (gh auth token).Trim())
+  ```
+
 ## `network: ...` 오류
 
 일시적인 네트워크 문제면 숫자가 없을 때는 30초, 있을 때는 다음 주기에 다시 시도합니다. 바로 다시 조회하려면 `refresh` 액션을 실행합니다.

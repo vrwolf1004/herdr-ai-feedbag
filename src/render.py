@@ -170,6 +170,15 @@ def box(*sections, min_inner=44, max_inner=70, title=None):
     return out
 
 
+def overlay(lines, popup):
+    """lines 가운데에 팝업 상자를 덮어쓴다. 팝업 밖의 줄은 그대로 남는다."""
+    width = display_width(ANSI_RE.sub("", lines[0]))
+    left = max(0, (width - display_width(ANSI_RE.sub("", popup[0]))) // 2)
+    top = max(0, (len(lines) - len(popup)) // 2)
+    for index, row in enumerate(popup[:len(lines) - top]):
+        lines[top + index] = " " * left + row
+
+
 def detail_lines(usages, frame, updated_at):
     lines = [""]
     labels = {w.key: t(f"window.{w.key}") for usage in usages for w in usage.windows}
@@ -192,11 +201,14 @@ def detail_lines(usages, frame, updated_at):
             lines.append(f"   {ANSI_DIM}{t('detail.last_failed', error=error_text(usage))}{ANSI_RESET}")
         lines.append("")
     stamp = updated_at.strftime("%H:%M:%S") if updated_at else "-"
-    # 시간은 보통 색, 단축키([Ctrl+C] ...)는 회색으로 보여 준다.
+    # 푸터: 왼쪽은 갱신 시각, 오른쪽은 단축키 힌트(Ctrl+H ...)를 회색으로 붙인다.
     footer = t("detail.footer", time=stamp)
-    split = footer.find("[")
-    lines.append(f" {footer[:split]}{ANSI_DIM}{footer[split:]}{ANSI_RESET}")
+    left, _, hint = footer.partition("   ")
     body = lines[1:-1]
     while body and not body[-1].strip():
         body.pop()
-    return box(body, lines[-1:], title=f"{ANSI_BOLD}🐺  herdr-ai-feedbag  🌕{ANSI_RESET}")
+    title = f"{ANSI_BOLD}🐺  herdr-ai-feedbag  🌕{ANSI_RESET}"
+    inner = display_width(ANSI_RE.sub("", box(body, [left], title=title)[0])) - 2
+    gap = max(1, inner - 2 - display_width(left) - display_width(hint))
+    footer_row = f"{left}{' ' * gap}{ANSI_DIM}{hint}{ANSI_RESET}"
+    return box(body, [footer_row], title=title)

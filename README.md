@@ -43,11 +43,34 @@ Dashboard (`feedbag` pane):
 │    Pro     ███►░░░░  37%  resets 10/22 09:00 │
 │    Flash   ▓►░░░░░░  12%  resets 10/22 09:00 │
 ├──────────────────────────────────────────────┤
-│  updated 13:23:25   [Ctrl+C] stop            │
+│  updated 10:43:17                Ctrl+H help │
 ╰──────────────────────────────────────────────╯
 ```
 
+Press `Ctrl+H` to open the help popup over the dashboard. Press `Ctrl+H` again to close it:
+
+```text
+        ╭──────────────────────────────╮
+        │          Ctrl+H help         │
+        ├──────────────────────────────┤
+        │ [t] theme                    │
+        │ [l] language                 │
+        │ [Ctrl+C] quit                │
+        ╰──────────────────────────────╯
+```
+
 When the shared dock is full with three blocks, a compact intro pane fills the fourth slot; it yields that slot when another block needs it.
+
+### Keys
+
+Keys work at once; no Enter needed (Windows).
+
+| Key | Action |
+| --- | --- |
+| `Ctrl+H` | Show or hide the help popup (Backspace also toggles it when nothing is typed) |
+| `t` | Next theme: phosphor green → amber → terminal default (saved) |
+| `l` | Next language: system → en → ko → ru → fr → es → de → ja → system (saved) |
+| `Ctrl+C` | Stop the dashboard |
 
 ## Installation
 
@@ -82,16 +105,7 @@ On Windows, append `-windows` to each action ID. Full setup and invocation instr
 - [Architecture](docs/architecture.md)
 - [Development and tests](docs/development.md)
 - [TODO](docs/todo.md)
-
-## Development
-
-```sh
-python -m unittest discover -s tests
-```
-
-## License
-
-[MIT](LICENSE)
+- [Additional sections](docs/readme-extras.md): sections moved out of this README
 
 ## Support the project
 

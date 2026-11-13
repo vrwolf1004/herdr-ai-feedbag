@@ -1,8 +1,10 @@
 {
+  "detail.help": "[t] theme   [l] language   [Ctrl+C] quit",
+  "hint.help": "Ctrl+H help",
   "detail.resets": "resets {time}",
   "detail.unlimited": "unlimited",
   "detail.last_failed": "last refresh failed: {error}",
-  "detail.footer": "updated {time}   [Ctrl+C] stop",
+  "detail.footer": "updated {time}   Ctrl+H help",
   "window.five_hour": "5h",
   "window.seven_day": "week",
   "window.premium_interactions": "premium",

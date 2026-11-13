@@ -1,8 +1,10 @@
 {
+  "detail.help": "[t] тема   [l] язык   [Ctrl+C] выход",
+  "hint.help": "Ctrl+H справка",
   "detail.resets": "сброс {time}",
   "detail.unlimited": "без лимита",
   "detail.last_failed": "последнее обновление не удалось: {error}",
-  "detail.footer": "обновлено {time}   [Ctrl+C] остановить",
+  "detail.footer": "обновлено {time}   Ctrl+H справка",
   "window.five_hour": "5 ч",
   "window.seven_day": "неделя",
   "window.premium_interactions": "премиум",

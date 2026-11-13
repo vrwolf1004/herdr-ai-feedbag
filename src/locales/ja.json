@@ -1,8 +1,10 @@
 {
+  "detail.help": "[t] テーマ   [l] 言語   [Ctrl+C] 終了",
+  "hint.help": "Ctrl+H ヘルプ",
   "detail.resets": "{time} にリセット",
   "detail.unlimited": "無制限",
   "detail.last_failed": "前回の取得に失敗: {error}",
-  "detail.footer": "{time} 更新   [Ctrl+C] 停止",
+  "detail.footer": "{time} 更新   Ctrl+H ヘルプ",
   "window.five_hour": "5時間",
   "window.seven_day": "週間",
   "window.premium_interactions": "プレミアム",

@@ -1,8 +1,10 @@
 {
+  "detail.help": "[t] Thema   [l] Sprache   [Strg+C] beenden",
+  "hint.help": "Strg+H Hilfe",
   "detail.resets": "Reset {time}",
   "detail.unlimited": "unbegrenzt",
   "detail.last_failed": "letzte Abfrage fehlgeschlagen: {error}",
-  "detail.footer": "aktualisiert {time}   [Strg+C] beenden",
+  "detail.footer": "aktualisiert {time}   Strg+H Hilfe",
   "window.five_hour": "5 Std.",
   "window.seven_day": "Woche",
   "window.premium_interactions": "Premium",

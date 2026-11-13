@@ -70,6 +70,17 @@ SIDEBAR_HIDE_KEY = "b"
 SIDEBAR_HIDE_DELAY_SECONDS = 1
 SIDEBAR_HIDE_RETRY_SECONDS = 5
 MAX_SOCKET_FAILURES = 10
+# 상세 화면 테마 (t 키로 순서대로 바꾼다). 빈 문자열은 터미널 기본색이다.
+THEMES = {
+    "phosphor": "\033[38;2;51;255;51m",  # 형광 녹색 #33FF33
+    "amber": "\033[38;2;255;176;0m",     # 호박색 #FFB000
+    "default": "",
+}
+DEFAULT_THEME = "phosphor"
+
+
+def next_choice(current, options):
+    return options[(options.index(current) + 1) % len(options)] if current in options else options[0]
 
 
 # ---------------------------------------------------------------- 경로/상태 파일
@@ -268,6 +279,44 @@ class Host:
         self.socket_failures = 0
         self.sidebar_seen = {}  # 사이드바 pane id → 처음 본 시각
         self.sidebar_sent = {}  # 사이드바 pane id → 마지막으로 숨기기 키를 보낸 시각
+        self.theme = self.state.read("theme")
+        if self.theme not in THEMES:
+            self.theme = DEFAULT_THEME
+        self.saved_lang = i18n.normalize(self.state.read("lang"))  # t, l 키로 고른 값은 환경 설정보다 우선한다
+        if self.saved_lang:
+            i18n.set_language(self.saved_lang)
+        self.help_open = False  # Ctrl+H 도움말 팝업
+
+    def handle_key(self, key):
+        """상세 화면에서 누른 키. t 는 테마, l 은 언어를 다음 값으로 바꾼다. Ctrl+H 는 도움말 팝업을 여닫는다."""
+        if key == "":  # Ctrl+H (Backspace 도 같은 값이라 함께 토글된다. 입력 줄이 없어서 문제 없다)
+            self.help_open = not self.help_open
+        elif key == "t":
+            self.theme = next_choice(self.theme, list(THEMES))
+            self.state.write("theme", self.theme)
+        elif key == "l":
+            # 순서: 시스템 설정 → 지원 언어들. 시스템 설정은 저장값을 지우고 환경에서 다시 정한다
+            nxt = next_choice(self.saved_lang or "system", ["system", *i18n.SUPPORTED])
+            if nxt == "system":
+                self.state.remove("lang")
+                i18n.set_language(i18n.detect())
+            else:
+                self.state.write("lang", nxt)
+                i18n.set_language(nxt)
+            self.saved_lang = None if nxt == "system" else nxt
+
+    def read_keys(self):
+        """Windows 콘솔의 키를 직접 읽는다. 키 한 번에 바로 반응한다 (입력 줄이 없다)."""
+        import msvcrt
+        while self.state.read("stop") is None:
+            if not msvcrt.kbhit():
+                time.sleep(0.05)
+                continue
+            key = msvcrt.getwch()
+            if key in ("\x00", "\xe0"):  # 화살표 같은 특수키는 뒤에 한 글자가 더 온다
+                msvcrt.getwch()
+                continue
+            self.handle_key(key.lower())
 
     def config_changed(self):
         try:
@@ -367,6 +416,12 @@ class Host:
 
     def draw(self, frame):
         lines = render.detail_lines(list(self.usages.values()), frame, self.updated_at)
+        if self.help_open:
+            rows = [row.strip() for row in i18n.t("detail.help").split("   ")]
+            render.overlay(lines, render.box(rows, title=i18n.t("hint.help")))
+        color = THEMES[self.theme]
+        # 안쪽 색 초기화(\033[0m) 뒤에도 테마 색이 이어지도록 다시 넣는다
+        lines = [color + line.replace(render.ANSI_RESET, render.ANSI_RESET + color) + render.ANSI_RESET for line in lines]
         # 같은 자리에 덮어쓴다. 화면을 지우면 터미널 스크롤백에 이전 프레임이 쌓인다.
         painted = "\n".join(line + "\033[K" for line in lines)
         sys.stdout.write("\033[H" + painted + "\033[J")
@@ -385,6 +440,8 @@ class Host:
         sys.stdout.write("\033[?25l")  # 커서 숨김
         self.state.remove("starting")
         threading.Thread(target=self.fetch_forever, daemon=True).start()
+        if os.name == "nt":
+            threading.Thread(target=self.read_keys, daemon=True).start()
         tick = 0
         try:
             while self.state.read("stop") is None and self.socket_failures < MAX_SOCKET_FAILURES:

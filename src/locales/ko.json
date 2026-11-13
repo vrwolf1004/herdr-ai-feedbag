@@ -1,8 +1,10 @@
 {
+  "detail.help": "[t] 테마   [l] 언어   [Ctrl+C] 종료",
+  "hint.help": "Ctrl+H 도움말",
   "detail.resets": "{time} 리셋",
   "detail.unlimited": "무제한",
   "detail.last_failed": "마지막 조회 실패: {error}",
-  "detail.footer": "{time} 갱신   [Ctrl+C] 중지",
+  "detail.footer": "{time} 갱신   Ctrl+H 도움말",
   "window.five_hour": "5시간",
   "window.seven_day": "주간",
   "window.premium_interactions": "프리미엄",

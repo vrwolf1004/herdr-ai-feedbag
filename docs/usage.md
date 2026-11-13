@@ -151,6 +151,21 @@ The dashboard and error messages support `en`, `ko`, `ru`, `fr`, `es`, `de`, and
 
 The short sidebar labels (`cld`, `cop`, `wk`, `rst`) stay the same in every language so the line width never changes. Missing translations fall back to English.
 
+### Dashboard keys
+
+The feedbag pane reads keys directly on Windows; no Enter is needed.
+
+| Key | Action |
+| --- | --- |
+| `Ctrl+H` | Shows or hides the help popup. Backspace sends the same key code, so it toggles the popup too |
+| `t` | Next theme: phosphor green → amber → terminal default. Saved in the state folder (`theme`) |
+| `l` | Next language: system → `en` → `ko` → `ru` → `fr` → `es` → `de` → `ja` → system. Saved in the state folder (`lang`) |
+| `Ctrl+C` | Stops the dashboard |
+
+A language picked with `l` wins over the order above for the dashboard. Choosing `system` removes the saved choice. The theme changes the base text color only; the usage bars keep their green, yellow, and red levels.
+
+The bottom line of the dashboard shows the last update time on the left and `Ctrl+H help` on the right.
+
 ## 8. Using it with herdr-sidebar
 
 [herdr-sidebar](https://github.com/alexarthurs/herdr-sidebar) docks its explorer into every focused tab, including the `herdr-dock` workspace. feedbag notices it and sends the sidebar's own hide key (`b`) after one second. herdr-sidebar then remembers that tab and stops reopening it.

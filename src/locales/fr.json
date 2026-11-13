@@ -1,8 +1,10 @@
 {
+  "detail.help": "[t] thème   [l] langue   [Ctrl+C] quitter",
+  "hint.help": "Ctrl+H aide",
   "detail.resets": "réinit. {time}",
   "detail.unlimited": "illimité",
   "detail.last_failed": "dernière actualisation échouée : {error}",
-  "detail.footer": "mis à jour {time}   [Ctrl+C] arrêter",
+  "detail.footer": "mis à jour {time}   Ctrl+H aide",
   "window.five_hour": "5 h",
   "window.seven_day": "semaine",
   "window.premium_interactions": "premium",
